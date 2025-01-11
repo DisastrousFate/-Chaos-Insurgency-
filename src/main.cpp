@@ -1,4 +1,5 @@
 #include "main.h"
+#include "subsystems.hpp"
 
 /////
 // For installation, upgrading, documentations, and tutorials, check out our website!
@@ -13,7 +14,8 @@ ez::Drive chassis(
 
     11,      // IMU Port
     4.125,  // Wheel Diameter (Remember, 4" wheels without screw holes are actually 4.125!)
-    200);   // GREEN Wheel RPM = cartridge * (motor gear / wheel gear)
+    200,    // GREEN Wheel RPM = cartridge * (motor gear / wheel gear)
+    1.0);   // 1:1 external gear ratio
 
 // Uncomment the trackers you're using here!
 // - `8` and `9` are smart ports (making these negative will reverse the sensor)
@@ -57,6 +59,7 @@ void autonomous() {
 
   ez::as::auton_selector.selected_auton_call();  // Calls selected auton from autonomous selector
 }
+
 
 /**
  * Simplifies printing tracker values to the brain screen
@@ -163,21 +166,39 @@ void ez_template_extras() {
  */
 void opcontrol() {
   // This is preference to what you like to drive on
-  chassis.drive_brake_set(MOTOR_BRAKE_COAST);
+  chassis.drive_brake_set(MOTOR_BRAKE_HOLD); //                not final
 
   while (true) {
     // Gives you some extras to make EZ-Template ezier
     ez_template_extras();
 
     chassis.opcontrol_tank();  // Tank control
-    // chassis.opcontrol_arcade_standard(ez::SPLIT);   // Standard split arcade
-    // chassis.opcontrol_arcade_standard(ez::SINGLE);  // Standard single arcade
-    // chassis.opcontrol_arcade_flipped(ez::SPLIT);    // Flipped split arcade
-    // chassis.opcontrol_arcade_flipped(ez::SINGLE);   // Flipped single arcade
 
-    // . . .
-    // Put more user control code here!
-    // . . .
+    // ----------------------
+    // ||MOGO Clamp pistons||
+    // ----------------------
+    mogoClamp_opcontrol();
+    
+
+    // ---------------------------
+    // ||Front intake pneumatics||
+    // ---------------------------
+    fIntake_opcontrol();
+    
+
+    // ---------------
+    // ||Main intake||
+    // ---------------
+    mainintake_opcontrol();
+    
+    
+    // -------------------------
+    // Wall stakes / Hanging arm
+    // -------------------------
+    wallstake_opcontrol();
+
+
+
 
     pros::delay(ez::util::DELAY_TIME);  // This is used for timer calculations!  Keep this ez::util::DELAY_TIME
   }
