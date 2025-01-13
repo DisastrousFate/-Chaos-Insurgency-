@@ -24,7 +24,7 @@ pros::adi::DigitalOut fintake('C', 0); // assuming 'A' is the port for the pisto
 
 // Motors
 
-pros::Motor intake_motor(1);
+pros::Motor intake_motor(8);
 pros::Motor wall_arm(2);
 
 
@@ -40,12 +40,12 @@ pros::MotorGroup left_motors(
 );
 
 pros::MotorGroup right_motors(
-	{5, 4},
+	{-5, -4},
 	pros::MotorGearset::green
 );
 
 lemlib::Drivetrain drivetrain(
-	&left_motors,
+	&left_motors,   
 	&right_motors,
 	13,
 	lemlib::Omniwheel::OLD_4,
@@ -267,6 +267,8 @@ void double_curvaturedrive(){
 
 
 void toggle_mogo() {
+
+    printf("Engaged");
     mogo_engaged = !mogo_engaged;
     mogo1.set_value(mogo_engaged);
     mogo2.set_value(mogo_engaged);
@@ -283,9 +285,9 @@ void opcontrol() {
 
 	while (true) {
 		
-        arcadedrive();
+        doublestick_arcade();
 
-        if (controller.get_digital(DIGITAL_RIGHT))
+        if (controller.get_digital_new_press(DIGITAL_RIGHT))
         {
             toggle_mogo();
         }
@@ -298,7 +300,7 @@ void opcontrol() {
          // move motor at 100% speed when button L1 is pressed, on hoiding the button
         if (controller.get_digital(DIGITAL_L1))
         {
-            intake_motor.move(127);  // Move the motor at full power while the button is held
+            intake_motor.move(-127);  // Move the motor at full power while the button is held
         } else {
             intake_motor.move(0);    // Stop the motor when the button is released
         }
@@ -306,7 +308,8 @@ void opcontrol() {
         // reverse motor spin on L2
         if (controller.get_digital(DIGITAL_L2))
         {
-            intake_motor.move(-127); // Move the motor at full power in reverse while the button is held
+            intake_motor.move(127); // Move the motor at full power in reverse while the button is held
+            //intake_motor.move_velocity(const std::int32_t velocity)
         } else {
             intake_motor.move(0);    // Stop the motor when the button is released
         }
