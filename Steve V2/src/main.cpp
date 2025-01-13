@@ -10,6 +10,8 @@
 #include "pros/motors.hpp"
 #include "pros/rtos.hpp"
 #include <cmath>
+#include "robodash/api.h"
+#include "robodash/views/selector.hpp"
 
 
 pros::Controller controller(pros::E_CONTROLLER_MASTER);
@@ -166,6 +168,23 @@ void initialize() {
     });
 }
 
+void Skills(){
+
+}
+
+// PID Tuning
+void tunePID(){
+    // set position to x:0, y:0, heading:0
+    chassis.setPose(0, 0, 0);
+    // turn to face heading 90 with a very long timeout
+    chassis.turnToHeading(90, 100000);
+}
+
+rd::Selector selector({
+    {"Skills run V1", &Skills},
+    {"PID Tuning", &tunePID}
+});
+
 /**
  * Runs while the robot is in the disabled state of Field Management System or
  * the VEX Competition Switch, following either autonomous or opcontrol. When
@@ -195,22 +214,14 @@ void competition_initialize() {}
  * will be stopped. Re-enabling the robot will restart the task, not re-start it
  * from where it left off.
  */
-void autonomous() {}
 
-/**
- * Runs the operator control code. This function will be started in its own task
- * with the default priority and stack size whenever the robot is enabled via
- * the Field Management System or the VEX Competition Switch in the operator
- * control mode.
- *
- * If no competition control is connected, this function will run immediately
- * following initialize().
- *
- * If the robot is disabled or communications is lost, the
- * operator control task will be stopped. Re-enabling the robot will restart the
- * task, not resume it from where it left off.
- */
 
+void autonomous() {  
+    printf("Running auton...");
+    selector.run_auton();
+}
+
+// Drive functions
 void tankdrive()
 {
     // get left y and right y positions
@@ -274,6 +285,20 @@ void toggle_fintake(){
     fintake_up = !fintake_up;
     fintake.set_value(fintake_up);
 }
+
+/**
+ * Runs the operator control code. This function will be started in its own task
+ * with the default priority and stack size whenever the robot is enabled via
+ * the Field Management System or the VEX Competition Switch in the operator
+ * control mode.
+ *
+ * If no competition control is connected, this function will run immediately
+ * following initialize().
+ *
+ * If the robot is disabled or communications is lost, the
+ * operator control task will be stopped. Re-enabling the robot will restart the
+ * task, not resume it from where it left off.
+ */
 
 void opcontrol() {
 	
