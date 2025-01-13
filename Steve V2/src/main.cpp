@@ -126,11 +126,6 @@ lemlib::Chassis chassis(drivetrain, // drivetrain settings
 
 
 
-
-
-
-
-
 /**
  * Runs initialization code. This occurs as soon as the program is started.
  *
@@ -282,29 +277,37 @@ void toggle_fintake(){
 
 void opcontrol() {
 	
-
 	while (true) {
 		
         doublestick_arcade();
 
-        if (controller.get_digital_new_press(DIGITAL_RIGHT))
+        //----------------------//
+        //      Pneumatics      //
+        //----------------------//
+        if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_RIGHT))
         {
             toggle_mogo();
         }
 
-        if (controller.get_digital(DIGITAL_X))
+        if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X))
         {
             toggle_fintake();
         }
 
+        //----------------------//
+        //        Intake        //
+        //----------------------//
+   
          // move motor at 100% speed when button L1 is pressed, on hoiding the button
+
+        /*
         if (controller.get_digital(DIGITAL_L1))
         {
             intake_motor.move(-127);  // Move the motor at full power while the button is held
         } else {
             intake_motor.move(0);    // Stop the motor when the button is released
         }
-
+        
         // reverse motor spin on L2
         if (controller.get_digital(DIGITAL_L2))
         {
@@ -313,7 +316,22 @@ void opcontrol() {
         } else {
             intake_motor.move(0);    // Stop the motor when the button is released
         }
+        */
 
+        if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1)){
+
+            intake_motor.move(-127);
+
+        } else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2))
+        {
+
+            intake_motor.move(127);
+        } else {
+
+            intake_motor.move(0);
+        }
+
+        /*
         if (controller.get_digital(DIGITAL_DOWN))
         {
             wall_arm.move(127);
@@ -327,8 +345,17 @@ void opcontrol() {
         } else {
             wall_arm.move(0);
         }
+        */
 
-
+        if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN))
+        {
+            wall_arm.move(127);
+        } else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_B))
+        {
+            wall_arm.move(-127);
+        } else {
+            wall_arm.move(0);
+        }
 
 
         // delay to save resources
