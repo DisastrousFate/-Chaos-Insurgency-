@@ -13,6 +13,9 @@
 #include "robodash/api.h"
 #include "robodash/views/selector.hpp"
 
+ASSET(example_txt);
+ASSET(auton_skills_v1_txt);
+
 
 pros::Controller controller(pros::E_CONTROLLER_MASTER);
 
@@ -169,7 +172,13 @@ void initialize() {
 }
 
 void Skills(){
+    chassis.setPose(0, 0, 0);
+    chassis.follow(auton_skills_v1_txt, 15, 2000); // edit values here
+}
 
+void example(){
+    chassis.setPose(0, 0, 0);
+    chassis.follow(example_txt, 15, 2000); // edit values here
 }
 
 // PID Tuning
@@ -182,6 +191,7 @@ void tunePID(){
 
 rd::Selector selector({
     {"Skills run V1", &Skills},
+    {"example", &example},
     {"PID Tuning", &tunePID}
 });
 
@@ -371,6 +381,10 @@ void opcontrol() {
             wall_arm.move(0);
         }
         */
+
+        //----------------------//
+        //      Wall Arm        //
+        //----------------------//
 
         if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN))
         {
