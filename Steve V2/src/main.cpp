@@ -22,8 +22,11 @@ pros::Controller controller(pros::E_CONTROLLER_MASTER);
 
 // Pneumatics
 
-pros::adi::DigitalOut mogo1('A', 0); // assuming 'A' is the port for the piston
-pros::adi::DigitalOut mogo2('B',0); // assuming 'B' is the port for the piston
+//pros::adi::DigitalOut mogo1('A', 0); // assuming 'A' is the port for the piston
+//pros::adi::DigitalOut mogo2('B',0); // assuming 'B' is the port for the piston
+
+pros::adi::Pneumatics mogo_piston1('A', true, true);
+pros::adi::Pneumatics mogo_piston2('B', true, true);
 
 pros::adi::DigitalOut fintake('C', 0); // assuming 'A' is the port for the piston
 
@@ -129,48 +132,6 @@ lemlib::Chassis chassis(drivetrain, // drivetrain settings
                         sensors // odometry sensors
 );
 
-
-
-/**
- * Runs initialization code. This occurs as soon as the program is started.
- *
- * All other competition modes are blocked by initialize; it is recommended
- * to keep execution time for this mode under a few seconds.
- */
-void initialize() {
-	pros::lcd::initialize();
-	pros::lcd::set_text(1, "Hello Alexander!");
-
-	/* Run to check optical shaft encoder inversion
-
-	while (true) { // infinite loop
-        // print measurements from the adi encoder
-
-        pros::lcd::print(0, "ADI Encoder: %i", adi_encoder.get_value());
-        pros::delay(10); // delay to save resources. DO NOT REMOVE
-    }
-	*/
-	pros::delay(1000); 
-	chassis.calibrate(); // calibrate sensors
-
-    //motor configs
-    chassis.setBrakeMode(pros::E_MOTOR_BRAKE_HOLD);
-    intake_motor.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
-    wall_arm.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
-
-	// print position to brain screen
-    pros::Task screen_task([&]() {
-        while (true) {
-            // print robot location to the brain screen
-            pros::lcd::print(0, "X: %f", chassis.getPose().x); // x
-            pros::lcd::print(1, "Y: %f", chassis.getPose().y); // y
-            pros::lcd::print(2, "Theta: %f", chassis.getPose().theta); // heading
-            // delay to save resources
-            pros::delay(20);
-        }
-    });
-}
-
 void Skills(){
     chassis.setPose(0, 0, 0);
     chassis.follow(auton_skills_v1_txt, 15, 2000); // edit values here
@@ -192,8 +153,61 @@ void tunePID(){
 rd::Selector selector({
     {"Skills run V1", &Skills},
     {"example", &example},
-    {"PID Tuning", &tunePID}
+    {"PID Tuning", &tunePID},
 });
+
+rd::Console console; /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+/**
+ * Runs initialization code. This occurs as soon as the program is started.
+ *
+ * All other competition modes are blocked by initialize; it is recommended
+ * to keep execution time for this mode under a few seconds.
+ */
+void initialize() {
+	//pros::lcd::initialize();
+
+    console.clear();
+    console.println("Robodash is running");
+	//pros::lcd::set_text(1, "Hello Alexander!");
+
+	/* Run to check optical shaft encoder inversion
+
+	while (true) { // infinite loop
+        // print measurements from the adi encoder
+
+        pros::lcd::print(0, "ADI Encoder: %i", adi_encoder.get_value());
+        pros::delay(10); // delay to save resources. DO NOT REMOVE
+    }
+	*/
+	pros::delay(1000); 
+	chassis.calibrate(); // calibrate sensors
+
+    //motor configs
+    chassis.setBrakeMode(pros::E_MOTOR_BRAKE_HOLD);
+    intake_motor.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+    wall_arm.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+
+
+    
+
+	// print position to brain screen
+    /*pros::Task screen_task([&]() {
+        while (true) {
+            // print robot location to the brain screen
+            pros::lcd::print(0, "X: %f", chassis.getPose().x); // x
+            pros::lcd::print(1, "Y: %f", chassis.getPose().y); // y
+            pros::lcd::print(2, "Theta: %f", chassis.getPose().theta); // heading
+            // delay to save resources
+            pros::delay(20);
+        }
+    });*/
+}
+
+
+
+
 
 /**
  * Runs while the robot is in the disabled state of Field Management System or
@@ -226,9 +240,30 @@ void competition_initialize() {}
  */
 
 
-void autonomous() {  
-    printf("Running auton...");
+void autonomous() {
+
+    /*pros::Task calibrateTask([=]() {
+        chassis.calibrate();
+        
+    });*/
+    pros::delay(1000);
+    /*
+    pros::Task telemetryTask([&]() {
+        console.println("Running LemLib auton");
+        lemlib::Pose pose(0, 0, 0);
+        while (true) {
+            pose = chassis.getPose();
+            console.printf("X: %f Y:%f Theta: %f\n", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
+            printf("X: %f, Y: %f, Theta: %f\n", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
+            // delay to save resources
+            pros::delay(1000);
+        }
+    });
+    */
+
     selector.run_auton();
+    printf("Running auton...");
+    
 }
 
 // Drive functions
@@ -285,9 +320,27 @@ void double_curvaturedrive(){
 void toggle_mogo() {
 
     printf("Engaged");
+    printf(mogo_piston1.is_extended() ? "true" : "false");
+    console.println("Engaged");
+    console.println(mogo_piston1.is_extended() ? "true" : "false");
     mogo_engaged = !mogo_engaged;
-    mogo1.set_value(mogo_engaged);
-    mogo2.set_value(mogo_engaged);
+
+    mogo_piston1.toggle();
+    mogo_piston2.toggle();
+
+    /* ALTERNATE SETUP MANUAL TOGGLE
+        if (mogo_piston1.is_extended()){
+            mogo_piston1.retract();
+            mogo_piston2.retract();
+        } else {
+            mogo_piston1.extend();
+            mogo_piston2.extend();
+        }
+    */
+
+    // OLD CODE
+    //mogo1.set_value(mogo_engaged);
+    //mogo2.set_value(mogo_engaged);
 
 }
 
@@ -355,12 +408,12 @@ void opcontrol() {
 
         if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1)){
 
-            intake_motor.move(-127);
+            intake_motor.move(-100);
 
         } else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2))
         {
 
-            intake_motor.move(127);
+            intake_motor.move(100);
         } else {
 
             intake_motor.move(0);
