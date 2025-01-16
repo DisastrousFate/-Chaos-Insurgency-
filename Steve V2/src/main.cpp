@@ -33,7 +33,7 @@ pros::adi::Pneumatics fintake('C', true, true);
 
 // Motors
 
-pros::Motor intake_motor(8);
+pros::Motor intake_motor(-8);
 pros::Motor wall_arm(2);
 
 
@@ -42,6 +42,12 @@ pros::Motor wall_arm(2);
 // Check if the A button is pressed to toggle the mogo clamp
 static bool mogo_engaged = false;
 static bool fintake_up = false;
+
+static int intakeProcess_time = 500; // ms
+static int intakeCapture_time = 1000; // ms
+static int intake_speed = 127;
+
+static int mogoDelay_time = 200; // ms
 
 pros::MotorGroup left_motors(
 	{7, 6},
@@ -133,9 +139,57 @@ lemlib::Chassis chassis(drivetrain, // drivetrain settings
                         sensors // odometry sensors
 );
 
+// Auton Functions
+
+
+void A_intakeRing(){
+    intake_motor.move(intake_speed);
+    pros::delay(intakeProcess_time);
+    intake_motor.move(0);
+}
+
+void A_captureRing(){
+    intake_motor.move(intake_speed);
+    pros::delay(intakeCapture_time);
+    intake_motor.move(0);
+}
+
+void A_spinIntake(){
+    intake_motor.move(intake_speed);
+}
+
+void A_stopIntake(){
+    intake_motor.move(0);
+}
+
+void A_mogoClamp(){
+    mogo_engaged = !mogo_engaged;
+
+    mogo_piston1.toggle();
+    mogo_piston2.toggle();
+}
+
+void A_fintake(){
+    fintake_up = !fintake_up;
+
+    fintake.toggle();
+}
+
+
+// Auton Routines
+
 void Skills(){
     chassis.setPose(0, 0, 0);
-    chassis.follow(auton_skills_v1_txt, 15, 2000); // edit values here
+    chassis.moveToPoint(-47.462, 17.854, 180);
+    pros::delay(mogoDelay_time);
+
+    A_mogoClamp();
+    pros::delay(mogoDelay_time);
+    A_spinIntake();
+
+    
+
+    //chassis.follow(auton_skills_v1_txt, 15, 2000); // edit values here
 }
 
 void example(){
@@ -247,7 +301,7 @@ void autonomous() {
         chassis.calibrate();
         
     });*/
-    pros::delay(1000);
+    //pros::delay(1000);
     /*
     pros::Task telemetryTask([&]() {
         console.println("Running LemLib auton");
@@ -268,8 +322,7 @@ void autonomous() {
 }
 
 // Drive functions
-void tankdrive()
-{
+void tankdrive(){
     // get left y and right y positions
     int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
     int rightY = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y);
@@ -278,10 +331,7 @@ void tankdrive()
     chassis.tank(leftY, rightY);
 }
 
-
-
-void arcadedrive()
-{
+void arcadedrive(){
     // get left y and right x positions
     int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
     int leftX = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X);
@@ -387,35 +437,15 @@ void opcontrol() {
         //----------------------//
         //        Intake        //
         //----------------------//
-   
-         // move motor at 100% speed when button L1 is pressed, on hoiding the button
-
-        /*
-        if (controller.get_digital(DIGITAL_L1))
-        {
-            intake_motor.move(-127);  // Move the motor at full power while the button is held
-        } else {
-            intake_motor.move(0);    // Stop the motor when the button is released
-        }
-        
-        // reverse motor spin on L2
-        if (controller.get_digital(DIGITAL_L2))
-        {
-            intake_motor.move(127); // Move the motor at full power in reverse while the button is held
-            //intake_motor.move_velocity(const std::int32_t velocity)
-        } else {
-            intake_motor.move(0);    // Stop the motor when the button is released
-        }
-        */
 
         if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1)){
 
-            intake_motor.move(-100);
+            intake_motor.move(intake_speed);
 
         } else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2))
         {
 
-            intake_motor.move(100);
+            intake_motor.move(-intake_speed);
         } else {
 
             intake_motor.move(0);
@@ -435,7 +465,7 @@ void opcontrol() {
         } else {
             wall_arm.move(0);
         }
-        */
+        
 
         //----------------------//
         //      Wall Arm        //
@@ -450,6 +480,8 @@ void opcontrol() {
         } else {
             wall_arm.move(0);
         }
+
+        */
 
 
         // delay to save resources
