@@ -28,7 +28,8 @@ pros::Controller controller(pros::E_CONTROLLER_MASTER);
 pros::adi::Pneumatics mogo_piston1('A', true, true);
 pros::adi::Pneumatics mogo_piston2('B', true, true);
 
-pros::adi::DigitalOut fintake('C', 0); // assuming 'A' is the port for the piston
+//pros::adi::DigitalOut fintake('C', 0); // assuming 'A' is the port for the piston
+pros::adi::Pneumatics fintake('C', true, true);
 
 // Motors
 
@@ -319,10 +320,8 @@ void double_curvaturedrive(){
 
 void toggle_mogo() {
 
-    printf("Engaged");
-    printf(mogo_piston1.is_extended() ? "true" : "false");
-    console.println("Engaged");
-    console.println(mogo_piston1.is_extended() ? "true" : "false");
+    printf("Mogo Toggled");
+    console.println("Mogo Toggled");
     mogo_engaged = !mogo_engaged;
 
     mogo_piston1.toggle();
@@ -346,7 +345,10 @@ void toggle_mogo() {
 
 void toggle_fintake(){
     fintake_up = !fintake_up;
-    fintake.set_value(fintake_up);
+    console.println("fintake toggled");
+    printf("fintake toggled");
+
+    fintake.toggle();
 }
 
 /**
