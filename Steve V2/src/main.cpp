@@ -15,6 +15,9 @@
 
 ASSET(example_txt);
 ASSET(auton_skills_v1_txt);
+ASSET(vexauton_txt);
+ASSET(auton1_txt);
+ASSET(QualAuton_txt);
 
 
 pros::Controller controller(pros::E_CONTROLLER_MASTER);
@@ -99,6 +102,8 @@ lemlib::OdomSensors sensors(&vertical_tracking_wheel, // vertical tracking wheel
 
 pros::Imu imu(11); // inertial sensor
 
+
+
 // placeholder/temp setup with plain imu odom
 
 lemlib::OdomSensors sensors(nullptr, // vertical tracking wheel 1, set to null
@@ -121,9 +126,9 @@ lemlib::ControllerSettings lateral_controller(10, // proportional gain (kP)
 );
 
 // angular PID controller
-lemlib::ControllerSettings angular_controller(2, // proportional gain (kP)
+lemlib::ControllerSettings angular_controller(1.2, // proportional gain (kP)
                                               0, // integral gain (kI)
-                                              10, // derivative gain (kD)
+                                              13, // derivative gain (kD)
                                               3, // anti windup
                                               1, // small error range, in degrees
                                               100, // small error range timeout, in milliseconds
@@ -186,15 +191,36 @@ void Skills(){
     A_mogoClamp();
     pros::delay(mogoDelay_time);
     A_spinIntake();
+} 
+void Qual(){
+    chassis.setPose(0, 0, 0);
+    chassis.moveToPoint(0,40,2000);
+    pros::delay(mogoDelay_time);
+    chassis.moveToPose(10,40, 90, 4000);
 
-    
-
-    //chassis.follow(auton_skills_v1_txt, 15, 2000); // edit values here
 }
 
-void example(){
-    chassis.setPose(0, 0, 0);
-    chassis.follow(example_txt, 15, 2000); // edit values here
+void red_Qual2(){
+    chassis.setPose(-150, 60, 180, 1000);
+    chassis.moveToPose(-46, 60, 180, 4000);
+    A_mogoClamp();
+    pros::delay(1000);
+    A_spinIntake();
+    chassis.moveToPose(36, 130, 90, 5000);
+}
+
+void blue_Qual2(){
+    chassis.setPose(150, 60, 0, 1000);
+    chassis.moveToPoint(60,60,4000);
+    A_mogoClamp();
+    pros::delay(1000);
+    A_spinIntake();
+    chassis.moveToPoint(60,160,3500);
+}
+
+void pathBlueQual(){
+    chassis.setPose(59.518, 24.216, 270);
+    chassis.follow(QualAuton_txt, 15, 15000);
 }
 
 // PID Tuning
@@ -202,16 +228,22 @@ void tunePID(){
     // set position to x:0, y:0, heading:0
     chassis.setPose(0, 0, 0);
     // turn to face heading 90 with a very long timeout
-    chassis.turnToHeading(90, 100000);
+    //chassis.turnToHeading(90, 100000);
 }
+
 
 rd::Selector selector({
     {"Skills run V1", &Skills},
-    {"example", &example},
+    {"blueQual", &blue_Qual2},
     {"PID Tuning", &tunePID},
+    {"RedQual", &Qual},
+    {"RedQual2", &red_Qual2},
+    {"pathBlueQual", &pathBlueQual}
+
 });
 
 rd::Console console; /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 
 /**
@@ -225,6 +257,7 @@ void initialize() {
 
     console.clear();
     console.println("Robodash is running");
+    console.println("updated");
 	//pros::lcd::set_text(1, "Hello Alexander!");
 
 	/* Run to check optical shaft encoder inversion
@@ -260,9 +293,23 @@ void initialize() {
     });*/
 }
 
-
-
-
+/*
+void tunePIDValue(double &value, const char* name) {
+    console.printf("Tuning %s: %f\n", name, value);
+    while (true) {
+        if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_Y)) {
+            value += 0.5;
+            console.printf("%s increased to: %f\n", name, value);
+            chassis.setAngularControllerSettings(angular_controller); // Apply changes to the angular controller
+        } else if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A)) {
+            value -= 0.5;
+            console.printf("%s decreased to: %f\n", name, value);
+            chassis.setAngularControllerSettings(angular_controller); // Apply changes to the angular controller
+        }
+        pros::delay(100);
+    }
+}
+*/
 
 /**
  * Runs while the robot is in the disabled state of Field Management System or
