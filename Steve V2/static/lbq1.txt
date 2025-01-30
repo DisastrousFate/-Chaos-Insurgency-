@@ -1,0 +1,28 @@
+-23.574, 23.431, 102.893
+-25.3, 24.439, 101.851
+-27.071, 25.369, 100.738
+-28.885, 26.209, 99.568
+-30.751, 26.928, 97.151
+-32.659, 27.525, 95.971
+-34.612, 27.956, 93.882
+-36.594, 28.217, 92.468
+-38.591, 28.288, 92.05
+-40.586, 28.162, 92.788
+-42.56, 27.847, 91.01
+-44.499, 27.359, 85.407
+-46.399, 26.737, 79.408
+-48.269, 26.026, 72.917
+-50.124, 25.28, 65.788
+-51.993, 24.569, 57.788
+-53.905, 23.985, 48.488
+-55.875, 23.656, 36.927
+-57.87, 23.719, 19.421
+-58.619, 23.86, 0
+-58.619, 23.86, 0
+-78.278, 27.542, 0
+endData
+247.2
+112
+200
+-23.574, 23.431, -42.599, 35.16, -49.751, 21.714, -58.619, 23.86
+#PATH.JERRYIO-DATA {"appVersion":"0.8.3","format":"LemLib v0.5","gc":{"robotWidth":15,"robotHeight":15,"robotIsHolonomic":false,"showRobot":true,"uol":2.54,"pointDensity":2,"controlMagnetDistance":1.968503937007874,"fieldImage":{"displayName":"V5RC 2025 - High Stakes","signature":"V5RC 2025 - High Stakes","origin":{"__type":"built-in"}},"coordinateSystem":"VEX Gaming Positioning System"},"paths":[{"segments":[{"controls":[{"uid":"fDLwdgMkjH","x":-23.573668100467348,"y":23.43062399791597,"lock":false,"visible":true,"heading":310,"__type":"end-point"},{"uid":"wLaKRYODNz","x":-42.598533739800835,"y":35.160240407129095,"lock":false,"visible":true,"__type":"control"},{"uid":"SKN80BpQmi","x":-49.75073886736981,"y":21.714094767299414,"lock":false,"visible":true,"__type":"control"},{"uid":"VMJU9oEFXX","x":-58.619473225555346,"y":23.85975630557011,"lock":false,"visible":true,"heading":270,"__type":"end-point"}],"speedProfiles":[{"uid":"cOVyQb3Bij","xPos":0,"yPos":1,"followBentRate":true},{"uid":"TTYXhruI5A","xPos":0.95,"yPos":1,"followBentRate":true},{"uid":"cr66UMEyjD","xPos":0.95,"yPos":1,"followBentRate":true}],"lookaheadKeyframes":[],"uid":"tBfTpqhtoS"}],"pc":{"speedLimit":{"minLimit":{"value":0,"label":"0"},"maxLimit":{"value":127,"label":"127"},"step":1,"from":10,"to":112},"bentRateApplicableRange":{"minLimit":{"value":0,"label":"0"},"maxLimit":{"value":1,"label":"1"},"step":0.001,"from":0,"to":0.1},"maxDecelerationRate":247.2},"name":"LBQ_1","uid":"YYEHTiJOa6","lock":false,"visible":true}]}

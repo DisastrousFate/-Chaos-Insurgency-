@@ -13,12 +13,7 @@
 #include "robodash/api.h"
 #include "robodash/views/selector.hpp"
 
-ASSET(example_txt);
-ASSET(auton_skills_v1_txt);
-ASSET(vexauton_txt);
-ASSET(auton1_txt);
-ASSET(QualAuton_txt);
-
+ASSET(lbq1_txt);
 
 pros::Controller controller(pros::E_CONTROLLER_MASTER);
 
@@ -99,6 +94,8 @@ lemlib::OdomSensors sensors(&vertical_tracking_wheel, // vertical tracking wheel
                             &imu // inertial sensor
 );
 */
+
+
 
 pros::Imu imu(11); // inertial sensor
 
@@ -218,9 +215,10 @@ void blue_Qual2(){
     chassis.moveToPoint(60,160,3500);
 }
 
-void pathBlueQual(){
-    chassis.setPose(59.518, 24.216, 270);
-    chassis.follow(QualAuton_txt, 15, 15000);
+void left_blueQual(){
+    chassis.setPose(-58.619, 23.86, 270);
+    chassis.follow(lbq1_txt, 30, 10000);
+
 }
 
 // PID Tuning
@@ -234,11 +232,12 @@ void tunePID(){
 
 rd::Selector selector({
     {"Skills run V1", &Skills},
-    {"blueQual", &blue_Qual2},
+    {"blueQual2", &blue_Qual2},
     {"PID Tuning", &tunePID},
     {"RedQual", &Qual},
     {"RedQual2", &red_Qual2},
-    {"pathBlueQual", &pathBlueQual}
+    {"leftBlueQual", &left_blueQual}
+    //{"pathBlueQual", &pathBlueQual}
 
 });
 
