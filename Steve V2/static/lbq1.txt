@@ -1,28 +1,29 @@
--23.574, 23.431, 102.893
--25.3, 24.439, 101.851
--27.071, 25.369, 100.738
--28.885, 26.209, 99.568
--30.751, 26.928, 97.151
--32.659, 27.525, 95.971
--34.612, 27.956, 93.882
--36.594, 28.217, 92.468
--38.591, 28.288, 92.05
--40.586, 28.162, 92.788
--42.56, 27.847, 91.01
--44.499, 27.359, 85.407
--46.399, 26.737, 79.408
--48.269, 26.026, 72.917
--50.124, 25.28, 65.788
--51.993, 24.569, 57.788
--53.905, 23.985, 48.488
--55.875, 23.656, 36.927
--57.87, 23.719, 19.421
--58.619, 23.86, 0
--58.619, 23.86, 0
--78.278, 27.542, 0
+-58.19, 23.288, 83.703
+-56.192, 23.32, 78.253
+-54.224, 23.659, 71.668
+-52.361, 24.374, 70.358
+-50.689, 25.464, 77.296
+-49.23, 26.829, 75.63
+-47.93, 28.348, 68.784
+-46.671, 29.902, 61.176
+-45.294, 31.35, 52.484
+-43.645, 32.469, 42.065
+-41.725, 32.989, 50.792
+-39.734, 32.907, 78.367
+-37.797, 32.418, 91.183
+-35.937, 31.684, 85.593
+-34.145, 30.799, 79.609
+-32.407, 29.809, 73.137
+-30.711, 28.749, 66.033
+-29.051, 27.636, 58.066
+-27.418, 26.48, 48.815
+-25.81, 25.292, 37.338
+-23.574, 23.574, 0
+-23.574, 23.574, 0
+-7.715, 11.388, 0
 endData
 247.2
 112
 200
--23.574, 23.431, -42.599, 35.16, -49.751, 21.714, -58.619, 23.86
-#PATH.JERRYIO-DATA {"appVersion":"0.8.3","format":"LemLib v0.5","gc":{"robotWidth":15,"robotHeight":15,"robotIsHolonomic":false,"showRobot":true,"uol":2.54,"pointDensity":2,"controlMagnetDistance":1.968503937007874,"fieldImage":{"displayName":"V5RC 2025 - High Stakes","signature":"V5RC 2025 - High Stakes","origin":{"__type":"built-in"}},"coordinateSystem":"VEX Gaming Positioning System"},"paths":[{"segments":[{"controls":[{"uid":"fDLwdgMkjH","x":-23.573668100467348,"y":23.43062399791597,"lock":false,"visible":true,"heading":310,"__type":"end-point"},{"uid":"wLaKRYODNz","x":-42.598533739800835,"y":35.160240407129095,"lock":false,"visible":true,"__type":"control"},{"uid":"SKN80BpQmi","x":-49.75073886736981,"y":21.714094767299414,"lock":false,"visible":true,"__type":"control"},{"uid":"VMJU9oEFXX","x":-58.619473225555346,"y":23.85975630557011,"lock":false,"visible":true,"heading":270,"__type":"end-point"}],"speedProfiles":[{"uid":"cOVyQb3Bij","xPos":0,"yPos":1,"followBentRate":true},{"uid":"TTYXhruI5A","xPos":0.95,"yPos":1,"followBentRate":true},{"uid":"cr66UMEyjD","xPos":0.95,"yPos":1,"followBentRate":true}],"lookaheadKeyframes":[],"uid":"tBfTpqhtoS"}],"pc":{"speedLimit":{"minLimit":{"value":0,"label":"0"},"maxLimit":{"value":127,"label":"127"},"step":1,"from":10,"to":112},"bentRateApplicableRange":{"minLimit":{"value":0,"label":"0"},"maxLimit":{"value":1,"label":"1"},"step":0.001,"from":0,"to":0.1},"maxDecelerationRate":247.2},"name":"LBQ_1","uid":"YYEHTiJOa6","lock":false,"visible":true}]}
+-58.19, 23.288, -42.357, 22.445, -51.312, 45.421, -23.574, 23.574
+#PATH.JERRYIO-DATA {"appVersion":"0.8.3","format":"LemLib v0.5","gc":{"robotWidth":15,"robotHeight":15,"robotIsHolonomic":false,"showRobot":true,"uol":2.54,"pointDensity":2,"controlMagnetDistance":1.968503937007874,"fieldImage":{"displayName":"V5RC 2025 - High Stakes","signature":"V5RC 2025 - High Stakes","origin":{"__type":"built-in"}},"coordinateSystem":"VEX Gaming Positioning System"},"paths":[{"segments":[{"controls":[{"uid":"6HF1ufRqA8","x":-58.19034091790121,"y":23.28757989536459,"lock":false,"visible":true,"heading":270,"__type":"end-point"},{"uid":"SHdj8gBKwa","x":-42.35745287382678,"y":22.44532778026577,"lock":false,"visible":true,"__type":"control"},{"uid":"sTyaRmXekA","x":-51.311990490931215,"y":45.42078613994161,"lock":false,"visible":true,"__type":"control"},{"uid":"ygsKvgIJfZ","x":-23.573668100467348,"y":23.573668100467348,"lock":false,"visible":true,"heading":300,"__type":"end-point"}],"speedProfiles":[],"lookaheadKeyframes":[],"uid":"kmPOGxKfcB"}],"pc":{"speedLimit":{"minLimit":{"value":0,"label":"0"},"maxLimit":{"value":127,"label":"127"},"step":1,"from":10,"to":112},"bentRateApplicableRange":{"minLimit":{"value":0,"label":"0"},"maxLimit":{"value":1,"label":"1"},"step":0.001,"from":0,"to":0.1},"maxDecelerationRate":247.2},"name":"LBQ_1","uid":"YYEHTiJOa6","lock":false,"visible":true}]}

@@ -44,8 +44,10 @@ static bool fintake_up = false;
 static int intakeProcess_time = 500; // ms
 static int intakeCapture_time = 1000; // ms
 static int intake_speed = 127;
+static int wallarm_speed = 90;
 
 static int mogoDelay_time = 200; // ms
+static int autonTimeout = 3000; // ms
 
 pros::MotorGroup left_motors(
 	{7, 6},
@@ -169,6 +171,7 @@ void A_mogoClamp(){
 
     mogo_piston1.toggle();
     mogo_piston2.toggle();
+    pros::delay(mogoDelay_time);
 }
 
 void A_fintake(){
@@ -215,9 +218,18 @@ void blue_Qual2(){
     chassis.moveToPoint(60,160,3500);
 }
 
-void left_blueQual(){
-    chassis.setPose(-58.619, 23.86, 270);
-    chassis.follow(lbq1_txt, 30, 10000);
+void left_redQual(){
+    chassis.setPose(-58.19, 23.288, 270);
+    chassis.follow(lbq1_txt, 30, autonTimeout);
+    A_mogoClamp();
+    A_captureRing();
+
+    chassis.turnToHeading(0, 1000);
+    chassis.moveToPoint(-23.574, 47.162, autonTimeout);
+
+
+
+    
 
 }
 
@@ -232,11 +244,8 @@ void tunePID(){
 
 rd::Selector selector({
     {"Skills run V1", &Skills},
-    {"blueQual2", &blue_Qual2},
     {"PID Tuning", &tunePID},
-    {"RedQual", &Qual},
-    {"RedQual2", &red_Qual2},
-    {"leftBlueQual", &left_blueQual}
+    {"leftRedQual", &left_redQual}
     //{"pathBlueQual", &pathBlueQual}
 
 });
@@ -497,8 +506,8 @@ void opcontrol() {
             intake_motor.move(0);
         }
 
-        /*
-        if (controller.get_digital(DIGITAL_DOWN))
+        
+       /* if (controller.get_digital(DIGITAL_DOWN))
         {
             wall_arm.move(127);
         } else {
@@ -511,7 +520,7 @@ void opcontrol() {
         } else {
             wall_arm.move(0);
         }
-        
+        */
 
         //----------------------//
         //      Wall Arm        //
@@ -519,15 +528,15 @@ void opcontrol() {
 
         if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN))
         {
-            wall_arm.move(127);
+            wall_arm.move(wallarm_speed);
         } else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_B))
         {
-            wall_arm.move(-127);
+            wall_arm.move(-wallarm_speed);
         } else {
             wall_arm.move(0);
         }
 
-        */
+        
 
 
         // delay to save resources
