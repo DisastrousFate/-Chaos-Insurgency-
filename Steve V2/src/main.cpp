@@ -10,6 +10,7 @@
 #include "pros/motors.hpp"
 #include "pros/rtos.hpp"
 #include <cmath>
+#include <cstdio>
 #include "robodash/api.h"
 #include "robodash/views/selector.hpp"
 
@@ -77,16 +78,16 @@ lemlib::Drivetrain drivetrain(
 
 
 //parallel/vertical encoder
-pros::adi::Encoder vertical_adi_encoder('C', 'D'); // add true parameter to reverse
+pros::adi::Encoder vertical_adi_encoder('E', 'F', true); // add true parameter to reverse
 
 // perpendicular/horizontal encoder
-//pros::adi::Encoder horizontal_adi_encoder('G', 'H'); // add true parameter to reverse
+pros::adi::Encoder horizontal_adi_encoder('C', 'D', true); // add true parameter to reverse
 
 //vertical tracking wheel
-lemlib::TrackingWheel vertical_tracking_wheel(&vertical_adi_encoder, lemlib::Omniwheel::OLD_275_HALF, -1.6);
+lemlib::TrackingWheel vertical_tracking_wheel(&vertical_adi_encoder, lemlib::Omniwheel::OLD_275_HALF, 0.5);
 
 //horizontal tracking wheel
-//lemlib::TrackingWheel horizontal_tracking_wheel(&horizontal_adi_encoder, lemlib::Omniwheel::NEW_275, -5.75);
+lemlib::TrackingWheel horizontal_tracking_wheel(&horizontal_adi_encoder, lemlib::Omniwheel::OLD_275_HALF, -4.5);
 
 
 
@@ -104,7 +105,7 @@ lemlib::OdomSensors sensors(&vertical_tracking_wheel, // vertical tracking wheel
 
 
 
-pros::Imu imu(11); // inertial sensor
+pros::Imu imu(9); // inertial sensor
 
 
 
@@ -112,7 +113,7 @@ pros::Imu imu(11); // inertial sensor
 
 lemlib::OdomSensors sensors(&vertical_tracking_wheel, // vertical tracking wheel 1, set to null
                             nullptr, // vertical tracking wheel 2, set to nullptr as we are using IMEs
-                            nullptr, // horizontal tracking wheel 1
+                            &horizontal_tracking_wheel, // horizontal tracking wheel 1
                             nullptr, // horizontal tracking wheel 2, set to nullptr as we don't have a second one
                             &imu // inertial sensor
 );
@@ -128,6 +129,17 @@ lemlib::ControllerSettings lateral_controller(10, // proportional gain (kP)
                                               500, // large error range timeout, in milliseconds
                                               20 // maximum acceleration (slew)
 );
+/*
+lemlib::ControllerSettings lateral_controller(13, // proportional gain (kP)
+                                              0, // integral gain (kI)
+                                              3, // derivative gain (kD)
+                                              0, // anti windup
+                                              0, // small error range, in inches
+                                              0, // small error range timeout, in milliseconds
+                                              0, // large error range, in inches
+                                              0, // large error range timeout, in milliseconds
+                                              0 // maximum acceleration (slew)
+);*/
 
 // angular PID controller
 lemlib::ControllerSettings angular_controller(4.3, // proportional gain (kP)
@@ -140,6 +152,8 @@ lemlib::ControllerSettings angular_controller(4.3, // proportional gain (kP)
                                               500, // large error range timeout, in milliseconds
                                               0 // maximum acceleration (slew)
 );
+
+
 
 // create the chassis
 lemlib::Chassis chassis(drivetrain, // drivetrain settings
@@ -228,10 +242,20 @@ void newSkills(){ // robot garden gambit
 
 void Qual(){
     chassis.setPose(0, 0, 0);
-    chassis.moveToPoint(0,40,2000);
+    chassis.moveToPoint(0,30,2000);
     pros::delay(mogoDelay_time);
-    chassis.moveToPose(10,40, 90, 4000);
+    //chassis.moveToPose(10,40, 90, 4000);
 
+}
+
+void alliance(){
+    chassis.setPose(0,0,0);
+    A_spinIntake();
+    pros::delay(5000);
+    A_stopIntake();
+
+    chassis.moveToPoint(0, 30, 2000, {}, false);
+    pros::delay(mogoDelay_time);
 }
 
 void red_Qual2(){
@@ -299,13 +323,23 @@ void tunePID(){
     chassis.setPose(0, 0, 0);
     // turn to face heading 90 with a very long timeout
     //chassis.turnToHeading(90, 100000);
-    chassis.moveToPoint(0, 40, 10000);
+    chassis.moveToPoint(0, 20, 1000);
+    /*pros::delay(1000);
+    chassis.turnToHeading(270, 1000);
+    pros::delay(1000);
+    chassis.moveToPose(15, 15, 180, 1000);
+    pros::delay(1000);
+    // go back to starting point
+    //chassis.moveToPoint(0, 0, 10000);
+    pros::delay(1000);
+    //chassis.turnToHeading(0, 1000);*/
 }
 
 
 rd::Selector selector({
-    {"Skills run V1", &Skills},
-    //{"PID Tuning", &tunePID},
+    {"Qual", &Qual},
+    {"PID Tuning", &tunePID},
+    {"Alliance", &alliance},
     {"leftRedQual", &left_redQual},
     {"RedLeftAuton", &RedLeftAuton},
     {"BlueRightAuton", &BlueRightAuton},
@@ -345,18 +379,23 @@ void initialize() {
     wallarm_angle = wall_arm.get_position();
 
 
-    /*Run to check optical shaft encoder inversion
+/* Run to check optical shaft encoder inversion
 
 	while (true) { // infinite loop
         // print measurements from the adi encoder
 
-        pros::lcd::print(0, "ADI Encoder: %i", vertical_adi_encoder.get_value());
-        console.printf("ADI Encoder: %i\n", vertical_adi_encoder.get_value());
-        pros::delay(10); // delay to save resources. DO NOT REMOVE
-    }
-    */
+        printf("VERT Encoder: %i\n", vertical_adi_encoder.get_value());
+        printf("HORZ Encoder: %i\n", horizontal_adi_encoder.get_value());
 
-	// print position to brain screen
+        //pros::lcd::print(0, "ADI Encoder: %i", vertical_adi_encoder.get_value());
+        //console.printf("VERT Encoder: %i\n", vertical_adi_encoder.get_value());
+        //console.printf("HORZ Encoder: %i\n", horizontal_adi_encoder.get_value());
+        pros::delay(25); // delay to save resources. DO NOT REMOVE
+    }
+    
+*/
+
+// print position to brain screen
     /*pros::Task screen_task([&]() {
         while (true) {
             // print robot location to the brain screen
