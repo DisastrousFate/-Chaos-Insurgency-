@@ -56,13 +56,13 @@ static int mogoDelay_time = 200; // ms
 static int autonTimeout = 10000; // ms
 
 pros::MotorGroup left_motors(
-	{7, 6},
-	pros::MotorGearset::green
+	{-7, -6}, //9
+	pros::MotorGearset::blue
 );
 
 pros::MotorGroup right_motors(
-	{-5, -4},
-	pros::MotorGearset::green
+	{8, 4}, //5
+	pros::MotorGearset::blue
 );
 
 lemlib::Drivetrain drivetrain(
