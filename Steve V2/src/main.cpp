@@ -13,18 +13,19 @@
 #include <cstdio>
 #include "robodash/api.h"
 #include "robodash/views/selector.hpp"
+#include "robot/ladybrown.h"
 
 using namespace Robot;
 using namespace Robot::Globals;
 
 /*
 
-       ████████▒░▒░█████████ ▒░░▒██▒░░▒ ██ ▒░░████████    █████████   
-    ░▒▓█▓▒░░▒▓█▓▒░     ░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░░▒▓█▓▒░ 
-    ░▒▓█▓▒░░▒▓█▓▒░     ░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░░▒▓█▓▒░ 
-     ░▒▓██████▓▒░▒▓███████▓▒░░▒▓████████▓▒░▒▓███████▓▒░░▒▓█▓▒░░▒▓█▓▒░ 
-    ░▒▓█▓▒░░▒▓█▓▒░     ░▒▓█▓▒░      ░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░ 
-    ░▒▓█▓▒░░▒▓█▓▒░     ░▒▓█▓▒░      ░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░ 
+       ████████▒░▒░█████████ ▒░░▒██▒░░▒ ██ ▒░░████████   ████████   
+    ░▒▓█▓▒░░▒▓█▓▒░     ░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░░▒ █▓▒░ 
+    ░▒▓█▓▒░░▒▓█▓▒░     ░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░░▒ █▓▒░ 
+     ░▒▓██████▓▒░▒▓███████▓▒░░▒▓████████▓▒░▒▓███████▓▒░░▒▓█▓▒░░▒ █▓▒░ 
+    ░▒▓█▓▒░░▒▓█▓▒░     ░▒▓█▓▒░      ░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒ █▓▒░ 
+    ░▒▓█▓▒░░▒▓█▓▒░     ░▒▓█▓▒░      ░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒ █▓▒░ 
      ░▒▓██████▓▒░▒▓███████▓▒░       ░▒▓█▓▒░░▒▓██████▓▒░░▒▓███████▓▒░  
 
     _______  _______  _______  _______  _______  _______  _______  _______ 
@@ -48,37 +49,30 @@ using namespace Robot::Globals;
 /**
  * @file main.cpp
  * @brief This file contains the main code for the robot's operation.
+*/
+
+namespace Robot {
+/**
+ * @brief Structure that holds instances of all robot subsystems.
  */
+struct RobotSubsystems {
+	//Robot::Autonomous autonomous;
+	Robot::Drivetrain drivetrain;
+	Robot::Clamp clamp;
+    Robot::Doinker doinker;
+    Robot::Intake intake;
+    Robot::LadyBrown ladybrown;
+	//Robot::Elevation elevation;
+	//Robot::Puncher puncher;
+	//Robot::Intake intake;
+} subsystem;
+}
 
 ASSET(lbq1_txt);
 ASSET(lbq2_txt);
 
-
-pros::Controller controller(pros::E_CONTROLLER_MASTER);
-
-
-// Pneumatics
-
-//pros::adi::DigitalOut mogo1('A', 0); // assuming 'A' is the port for the piston
-//pros::adi::DigitalOut mogo2('B',0); // assuming 'B' is the port for the piston
-
-pros::adi::Pneumatics mogopistons('A', true, true);
-pros::adi::Pneumatics doinker('B', true, true);
-
-//pros::adi::DigitalOut doinker('C', 0); // assuming 'A' is the port for the piston
-//pros::adi::Pneumatics doinker('G', true, true);
-
-// Motors
-
-pros::Motor intake_motor(-12);
-pros::Motor ladybrown_motor(18 );
-
-
-//intake_motor.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
-
 // Check if the A button is pressed to toggle the mogo clamp
-static bool mogo_engaged = false;
-static bool doinker_up = false;
+bool doinker_up = false;
 
 static int intakeProcess_time = 500; // ms
 static int intakeCapture_time = 1000; // ms
@@ -91,96 +85,11 @@ int wallarm_angle = 0;
 static int mogoDelay_time = 200; // ms
 static int autonTimeout = 10000; // ms
 
-pros::MotorGroup left_motors(
-	{-13, -8, 9}, //9
-	pros::MotorGearset::blue
-);
-
-pros::MotorGroup right_motors(
-	{14, 5, -4}, //5
-	pros::MotorGearset::blue
-);
-
-lemlib::Drivetrain drivetrain(
-	&left_motors,   
-	&right_motors,
-	13,
-	lemlib::Omniwheel::OLD_4,
-	420,
-	2
-);  
-
-//parallel/vertical encoder
-pros::adi::Encoder vertical_adi_encoder('C', 'D', true); // add true parameter to reverse
-
-// perpendicular/horizontal encoder
-pros::adi::Encoder horizontal_adi_encoder('E', 'F', true); // add true parameter to reverse
-
-//vertical tracking wheel
-lemlib::TrackingWheel vertical_tracking_wheel(&vertical_adi_encoder, lemlib::Omniwheel::OLD_275_HALF, 0.5);
-
-//horizontal tracking wheel
-lemlib::TrackingWheel horizontal_tracking_wheel(&horizontal_adi_encoder, lemlib::Omniwheel::OLD_275_HALF, -4.5);
-
-pros::Imu imu(9); // inertial sensor
-
-lemlib::OdomSensors sensors(&vertical_tracking_wheel, // vertical tracking wheel 1, set to null
-                            nullptr, // vertical tracking wheel 2, set to nullptr as we are using IMEs
-                            &horizontal_tracking_wheel, // horizontal tracking wheel 1
-                            nullptr, // horizontal tracking wheel 2, set to nullptr as we don't have a second one
-                            &imu // inertial sensor
-);
-
-// lateral PID controller
-lemlib::ControllerSettings lateral_controller(10, // proportional gain (kP)
-                                              0, // integral gain (kI)
-                                              3, // derivative gain (kD)
-                                              3, // anti windup
-                                              1, // small error range, in inches
-                                              100, // small error range timeout, in milliseconds
-                                              3, // large error range, in inches
-                                              500, // large error range timeout, in milliseconds
-                                              20 // maximum acceleration (slew)
-);
-/*
-lemlib::ControllerSettings lateral_controller(13, // proportional gain (kP)
-                                              0, // integral gain (kI)
-                                              3, // derivative gain (kD)
-                                              0, // anti windup
-                                              0, // small error range, in inches
-                                              0, // small error range timeout, in milliseconds
-                                              0, // large error range, in inches
-                                              0, // large error range timeout, in milliseconds
-                                              0 // maximum acceleration (slew)
-);*/
-
-// angular PID controller
-lemlib::ControllerSettings angular_controller(4.3, // proportional gain (kP)
-                                              0, // integral gain (kI)
-                                              27.3, // derivative gain (kD)
-                                              3, // anti windup
-                                              1, // small error range, in inches
-                                              100, // small error range timeout, in milliseconds
-                                              3, // large error range, in inches
-                                              500, // large error range timeout, in milliseconds
-                                              0 // maximum acceleration (slew)
-);
-
-
-
-// create the chassis
-lemlib::Chassis chassis(drivetrain, // drivetrain settings
-                        lateral_controller, // lateral PID settings
-                        angular_controller, // angular PID settings
-                        sensors // odometry sensors
-);
-
 void getWallPos(){
     wallarm_angle = ladybrown_motor.get_position();
 }
 
 // Auton Functions
-
 
 void A_intakeRing(){
     intake_motor.move(ladybrown_speed);
@@ -205,7 +114,7 @@ void A_stopIntake(){
 void A_mogoClamp(){
     mogo_engaged = !mogo_engaged;
 
-    mogopistons.toggle();
+    mogo_pistons.toggle();
     pros::delay(mogoDelay_time);
 }
 
@@ -214,7 +123,6 @@ void A_doinker(){
 
     doinker.toggle();
 }
-
 
 // Auton Routines
 
@@ -228,7 +136,7 @@ void Skills(){
     A_spinIntake();
 } 
 
-void newSkills(){ // robot garden gambit
+void newSkills(){ // robot garden gambit/st chris/letchworth
     A_spinIntake();
     pros::delay(1500);
     A_stopIntake();
@@ -306,8 +214,7 @@ void left_redQual(){
 
 }
 
-
-//BREAD AUTOON
+//BREAD AUTON
 void BlueRightAuton () {
     chassis.setPose(0,0,0);
     chassis.moveToPose(0,-15,0,1500,{.forwards = false, .maxSpeed = 60}, true );
@@ -348,21 +255,8 @@ void tunePID(){
 }
 
 
-rd::Selector selector({
-    {"Qual", &Qual},
-    {"PID Tuning", &tunePID},
-    {"Alliance", &alliance},
-    {"leftRedQual", &left_redQual},
-    {"RedLeftAuton", &RedLeftAuton},
-    {"BlueRightAuton", &BlueRightAuton},
-    {"autoskills", &newSkills}
-    //{"pathBlueQual", &pathBlueQual}
-
-});
 
 rd::Console console; /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
 
 /**
  * Runs initialization code. This occurs as soon as the program is started.
@@ -375,13 +269,11 @@ void initialize() {
 
     console.clear();
     console.println("Robodash is running");
-    console.println("updated");
-	//pros::lcd::set_text(1, "Hello Alexander!");
+    console.println("8346D CHAOS INSURGENCY");
 
-	
-	
 	pros::delay(1000); 
 	chassis.calibrate(); // calibrate sensors
+    chassis.setPose(0,0,0);
 
     //motor configs
     chassis.setBrakeMode(pros::E_MOTOR_BRAKE_HOLD);
@@ -455,7 +347,18 @@ void disabled() {}
  * This task will exit when the robot is enabled and autonomous or opcontrol
  * starts.
  */
-void competition_initialize() {}
+void competition_initialize() {
+    rd::Selector selector({
+        {"Qual", &Qual},
+        {"PID Tuning", &tunePID},
+        {"Alliance", &alliance},
+        {"leftRedQual", &left_redQual},
+        {"RedLeftAuton", &RedLeftAuton},
+        {"BlueRightAuton", &BlueRightAuton},
+        {"autoskills", &newSkills}
+        //{"pathBlueQual", &pathBlueQual}
+    });
+}
 
 /**
  * Runs the user autonomous code. This function will be started in its own task
@@ -496,37 +399,6 @@ void autonomous() {
     
 }
 
-void toggle_mogo() {
-
-    printf("Mogo Toggled");
-    console.println("Mogo Toggled");
-    mogo_engaged = !mogo_engaged;
-
-    mogopistons.toggle();
-
-    /* ALTERNATE SETUP MANUAL TOGGLE
-        if (mogopistons1.is_extended()){
-            mogopistons1.retract();
-            mogopistons2.retract();
-        } else {
-            mogopistons1.extend();
-            mogopistons2.extend();
-        }
-    */
-
-    // OLD CODE
-    //mogo1.set_value(mogo_engaged);
-    //mogo2.set_value(mogo_engaged);
-
-}
-
-void toggle_doinker(){
-    doinker_up = !doinker_up;
-    console.println("doinker toggled");
-    printf("doinker toggled");
-
-    doinker.toggle();
-}
 
 void wallarm_ready(){
 
@@ -550,19 +422,29 @@ void opcontrol() {
 	
 	while (true) {
 		
-        doublestick_arcade();
+        //doublestick_arcade();
+
+        // select autonomous and run autonomous without a competition switch
+        if(controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_UP)) {
+			competition_initialize();
+		}
+		if(controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X)) {
+			autonomous();
+		}
+
+        subsystem.drivetrain.run();
 
         //----------------------//
         //      Pneumatics      //
         //----------------------//
         if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_DOWN))
         {
-            toggle_mogo();
+            subsystem.clamp.toggle();
         }
 
         if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B))
         {
-            toggle_doinker();
+           subsystem.doinker.toggle();
         }
 
         //----------------------//
@@ -571,43 +453,27 @@ void opcontrol() {
 
         if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1)){
 
-            intake_motor.move(ladybrown_speed);
+            subsystem.intake.moveForward();
 
         } else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2))
         {
+            subsystem.intake.moveBackward();
 
-            intake_motor.move(-ladybrown_speed);
         } else {
 
-            intake_motor.move(0);
+            subsystem.intake.stop();
         }
 
-        
-       /* if (controller.get_digital(DIGITAL_DOWN))
-        {
-            ladybrown_motor.move(127);
-        } else {
-            ladybrown_motor.move(0);
-        }
-
-        if (controller.get_digital(DIGITAL_B))
-        {
-            ladybrown_motor.move(-127);
-        } else {
-            ladybrown_motor.move(0);
-        }
-        */
-
-        //----------------------//
-        //      Wall Arm        //
-        //----------------------//
+        //-----------------------------------//
+        //      Wall Arm / Lady Brown        //
+        //-----------------------------------//
 
         if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R1))
         {
-            ladybrown_motor.move(wallarm_speed);
+            subsystem.ladybrown.Raise();
         } else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2))
         {
-            ladybrown_motor.move(-wallarm_speed);
+            LadyBrown.Raise();
         } else {
             ladybrown_motor.move(0);
         }

@@ -63,3 +63,13 @@ void Drivetrain::Double_CurvatureDrive(){
     // move the robot
     chassis.curvature(leftY, rightX);
 }
+
+void Drivetrain::run(){
+    // select drivetrain to run
+    
+    Drivetrain::Doublestick_Arcade();
+    //Drivetrain::TankDrive();
+    //Drivetrain::ArcadeDrive();
+    //Drivetrain::CurvatureDrive();
+    //Drivetrain::Double_CurvatureDrive();
+}
