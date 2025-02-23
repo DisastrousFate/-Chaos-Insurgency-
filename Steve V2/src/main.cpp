@@ -26,7 +26,7 @@ pros::Controller controller(pros::E_CONTROLLER_MASTER);
 //pros::adi::DigitalOut mogo1('A', 0); // assuming 'A' is the port for the piston
 //pros::adi::DigitalOut mogo2('B',0); // assuming 'B' is the port for the piston
 
-pros::adi::Pneumatics mogo_piston1('A', true, true);
+pros::adi::Pneumatics mogo_piston('A', true, true);
 pros::adi::Pneumatics plonker('B', true, true);
 
 //pros::adi::DigitalOut plonker('C', 0); // assuming 'A' is the port for the piston
@@ -623,7 +623,7 @@ void opcontrol() {
             wall_arm.move(0);
         }
 
-        printf("Wall Arm Position: %d\n", wall_arm.get_position());
+        printf("Wall Arm Position: %f\n", wall_arm.get_position());
         
 
 
