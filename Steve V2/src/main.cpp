@@ -14,6 +14,42 @@
 #include "robodash/api.h"
 #include "robodash/views/selector.hpp"
 
+using namespace Robot;
+using namespace Robot::Globals;
+
+/*
+
+       ████████▒░▒░█████████ ▒░░▒██▒░░▒ ██ ▒░░████████    █████████   
+    ░▒▓█▓▒░░▒▓█▓▒░     ░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░░▒▓█▓▒░ 
+    ░▒▓█▓▒░░▒▓█▓▒░     ░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░░▒▓█▓▒░ 
+     ░▒▓██████▓▒░▒▓███████▓▒░░▒▓████████▓▒░▒▓███████▓▒░░▒▓█▓▒░░▒▓█▓▒░ 
+    ░▒▓█▓▒░░▒▓█▓▒░     ░▒▓█▓▒░      ░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░ 
+    ░▒▓█▓▒░░▒▓█▓▒░     ░▒▓█▓▒░      ░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░ 
+     ░▒▓██████▓▒░▒▓███████▓▒░       ░▒▓█▓▒░░▒▓██████▓▒░░▒▓███████▓▒░  
+
+    _______  _______  _______  _______  _______  _______  _______  _______ 
+
+    _____ _____ _____ _____ _____    _____ _____ _____ _____ _____ _____ _____ _____ _____ __ __ 
+    |     |  |  |  _  |     |   __|  |     |   | |   __|  |  | __  |   __|   __|   | |     |  |  |
+    |   --|     |     |  |  |__   |  |-   -| | | |__   |  |  |    -|  |  |   __| | | |   --|_   _|
+    |_____|__|__|__|__|_____|_____|  |_____|_|___|_____|_____|__|__|_____|_____|_|___|_____| |_|  
+                                                                                              
+    _______  _______  _______  _______  _______  _______  _______  _______  
+     
+    ** 8346D ** 
+    ** -- Chaos Insurgency -- **
+    ** Written and Developed by Alexander Halesworth **
+
+        \\Special Thanks to the LEM Library and PROS Contributors\\
+        \\Special Thanks to the RoboDash Team\\
+                                                                                                                                                                                                                                                      
+*/
+
+/**
+ * @file main.cpp
+ * @brief This file contains the main code for the robot's operation.
+ */
+
 ASSET(lbq1_txt);
 ASSET(lbq2_txt);
 
@@ -26,27 +62,27 @@ pros::Controller controller(pros::E_CONTROLLER_MASTER);
 //pros::adi::DigitalOut mogo1('A', 0); // assuming 'A' is the port for the piston
 //pros::adi::DigitalOut mogo2('B',0); // assuming 'B' is the port for the piston
 
-pros::adi::Pneumatics mogo_piston('A', true, true);
-pros::adi::Pneumatics plonker('B', true, true);
+pros::adi::Pneumatics mogopistons('A', true, true);
+pros::adi::Pneumatics doinker('B', true, true);
 
-//pros::adi::DigitalOut plonker('C', 0); // assuming 'A' is the port for the piston
-//pros::adi::Pneumatics plonker('G', true, true);
+//pros::adi::DigitalOut doinker('C', 0); // assuming 'A' is the port for the piston
+//pros::adi::Pneumatics doinker('G', true, true);
 
 // Motors
 
 pros::Motor intake_motor(-12);
-pros::Motor wall_arm(18 );
+pros::Motor ladybrown_motor(18 );
 
 
 //intake_motor.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
 
 // Check if the A button is pressed to toggle the mogo clamp
 static bool mogo_engaged = false;
-static bool plonker_up = false;
+static bool doinker_up = false;
 
 static int intakeProcess_time = 500; // ms
 static int intakeCapture_time = 1000; // ms
-static int intake_speed = 127;
+static int ladybrown_speed = 127;
 
 
 static int wallarm_speed = 60;
@@ -140,26 +176,26 @@ lemlib::Chassis chassis(drivetrain, // drivetrain settings
 );
 
 void getWallPos(){
-    wallarm_angle = wall_arm.get_position();
+    wallarm_angle = ladybrown_motor.get_position();
 }
 
 // Auton Functions
 
 
 void A_intakeRing(){
-    intake_motor.move(intake_speed);
+    intake_motor.move(ladybrown_speed);
     pros::delay(intakeProcess_time);
     intake_motor.move(0);
 }
 
 void A_captureRing(){
-    intake_motor.move(-intake_speed);
+    intake_motor.move(-ladybrown_speed);
     pros::delay(intakeCapture_time);
     intake_motor.move(0);
 }
 
 void A_spinIntake(){
-    intake_motor.move(-intake_speed);
+    intake_motor.move(-ladybrown_speed);
 }
 
 void A_stopIntake(){
@@ -169,14 +205,14 @@ void A_stopIntake(){
 void A_mogoClamp(){
     mogo_engaged = !mogo_engaged;
 
-    mogo_piston1.toggle();
+    mogopistons.toggle();
     pros::delay(mogoDelay_time);
 }
 
-void A_plonker(){
-    plonker_up = !plonker_up;
+void A_doinker(){
+    doinker_up = !doinker_up;
 
-    plonker.toggle();
+    doinker.toggle();
 }
 
 
@@ -351,8 +387,8 @@ void initialize() {
     chassis.setBrakeMode(pros::E_MOTOR_BRAKE_HOLD);
     intake_motor.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
 
-    wall_arm.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD); 
-    wallarm_angle = wall_arm.get_position();
+    ladybrown_motor.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD); 
+    wallarm_angle = ladybrown_motor.get_position();
     console.printf("Wall Arm Position: %d\n", wallarm_angle);
 
 
@@ -460,68 +496,21 @@ void autonomous() {
     
 }
 
-// Drive functions
-void tankdrive(){
-    // get left y and right y positions
-    int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
-    int rightY = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y);
-
-    // move the robot
-    chassis.tank(leftY, rightY);
-}
-
-void arcadedrive(){
-    // get left y and right x positions
-    int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
-    int leftX = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X);
-
-    // move the robot
-    chassis.arcade(leftY, leftX);
-}
-
-void doublestick_arcade(){
-    // get left y and right x positions
-    int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
-    int rightX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
-
-    // move the robot
-    chassis.arcade(leftY, rightX);
-}
-
-void curvaturedrive(){
-    // get left y and right x positions
-    int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
-    int leftX = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X);
-
-    // move the robot
-    chassis.curvature(leftY, leftX);
-}
-
-void double_curvaturedrive(){
-    // get left y and right x positions
-    int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
-    int rightX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
-
-    // move the robot
-    chassis.curvature(leftY, rightX);
-}
-
-
 void toggle_mogo() {
 
     printf("Mogo Toggled");
     console.println("Mogo Toggled");
     mogo_engaged = !mogo_engaged;
 
-    mogo_piston1.toggle();
+    mogopistons.toggle();
 
     /* ALTERNATE SETUP MANUAL TOGGLE
-        if (mogo_piston1.is_extended()){
-            mogo_piston1.retract();
-            mogo_piston2.retract();
+        if (mogopistons1.is_extended()){
+            mogopistons1.retract();
+            mogopistons2.retract();
         } else {
-            mogo_piston1.extend();
-            mogo_piston2.extend();
+            mogopistons1.extend();
+            mogopistons2.extend();
         }
     */
 
@@ -531,12 +520,12 @@ void toggle_mogo() {
 
 }
 
-void toggle_plonker(){
-    plonker_up = !plonker_up;
-    console.println("plonker toggled");
-    printf("plonker toggled");
+void toggle_doinker(){
+    doinker_up = !doinker_up;
+    console.println("doinker toggled");
+    printf("doinker toggled");
 
-    plonker.toggle();
+    doinker.toggle();
 }
 
 void wallarm_ready(){
@@ -573,7 +562,7 @@ void opcontrol() {
 
         if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B))
         {
-            toggle_plonker();
+            toggle_doinker();
         }
 
         //----------------------//
@@ -582,12 +571,12 @@ void opcontrol() {
 
         if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1)){
 
-            intake_motor.move(intake_speed);
+            intake_motor.move(ladybrown_speed);
 
         } else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2))
         {
 
-            intake_motor.move(-intake_speed);
+            intake_motor.move(-ladybrown_speed);
         } else {
 
             intake_motor.move(0);
@@ -596,16 +585,16 @@ void opcontrol() {
         
        /* if (controller.get_digital(DIGITAL_DOWN))
         {
-            wall_arm.move(127);
+            ladybrown_motor.move(127);
         } else {
-            wall_arm.move(0);
+            ladybrown_motor.move(0);
         }
 
         if (controller.get_digital(DIGITAL_B))
         {
-            wall_arm.move(-127);
+            ladybrown_motor.move(-127);
         } else {
-            wall_arm.move(0);
+            ladybrown_motor.move(0);
         }
         */
 
@@ -615,15 +604,15 @@ void opcontrol() {
 
         if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R1))
         {
-            wall_arm.move(wallarm_speed);
+            ladybrown_motor.move(wallarm_speed);
         } else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2))
         {
-            wall_arm.move(-wallarm_speed);
+            ladybrown_motor.move(-wallarm_speed);
         } else {
-            wall_arm.move(0);
+            ladybrown_motor.move(0);
         }
 
-        printf("Wall Arm Position: %f\n", wall_arm.get_position());
+        printf("Wall Arm Position: %f\n", ladybrown_motor.get_position());
         
 
 
