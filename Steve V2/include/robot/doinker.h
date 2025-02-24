@@ -18,7 +18,6 @@ public:
      * @note Make sure to initialize the clamp before calling this function.
      */
 
-    Doinker();
 
     void toggle();
 

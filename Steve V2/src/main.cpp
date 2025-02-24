@@ -2,6 +2,7 @@
 #include "lemlib/api.hpp" // IWYU pragma: keep
 #include "lemlib/chassis/chassis.hpp"
 #include "lemlib/chassis/trackingWheel.hpp"
+#include "globals.h"
 #include "pros/adi.hpp"
 #include "pros/imu.hpp"
 #include "pros/misc.h"
@@ -20,7 +21,7 @@ using namespace Robot::Globals;
 
 /*
 
-       ████████▒░▒░█████████ ▒░░▒██▒░░▒ ██ ▒░░████████   ████████   
+       ████████▒░▒█████████ ▒░░▒██▒░░▒ ██ ▒░░████████    ████████   
     ░▒▓█▓▒░░▒▓█▓▒░     ░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░░▒ █▓▒░ 
     ░▒▓█▓▒░░▒▓█▓▒░     ░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░░▒ █▓▒░ 
      ░▒▓██████▓▒░▒▓███████▓▒░░▒▓████████▓▒░▒▓███████▓▒░░▒▓█▓▒░░▒ █▓▒░ 
@@ -90,7 +91,7 @@ void getWallPos(){
 }
 
 // Auton Functions
-
+/*
 void A_intakeRing(){
     intake_motor.move(ladybrown_speed);
     pros::delay(intakeProcess_time);
@@ -243,7 +244,7 @@ void tunePID(){
     // turn to face heading 90 with a very long timeout
     //chassis.turnToHeading(90, 100000);
     chassis.moveToPoint(0, 20, 1000);
-    /*pros::delay(1000);
+    pros::delay(1000);
     chassis.turnToHeading(270, 1000);
     pros::delay(1000);
     chassis.moveToPose(15, 15, 180, 1000);
@@ -251,9 +252,10 @@ void tunePID(){
     // go back to starting point
     //chassis.moveToPoint(0, 0, 10000);
     pros::delay(1000);
-    //chassis.turnToHeading(0, 1000);*/
+    //chassis.turnToHeading(0, 1000);
 }
 
+/*
 
 
 rd::Console console; /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -269,7 +271,21 @@ void initialize() {
 
     console.clear();
     console.println("Robodash is running");
-    console.println("8346D CHAOS INSURGENCY");
+    
+    console.println("   ████████▒░▒█████████ ▒░░██▒░░▒ ██ ▒░░  ████████   ████████");
+    console.println("░▒▓█▓▒░░▒▓█▓▒░     ░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░░▒ █▓▒░");
+    console.println("░▒▓█▓▒░░▒▓█▓▒░     ░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░░▒ █▓▒░ ");
+    console.println(" ░▒▓██████▓▒░▒▓███████▓▒░░▒▓████████▓▒░▒▓███████▓▒░░▒▓█▓▒░░▒ █▓▒░ ");
+    console.println("░▒▓█▓▒░░▒▓█▓▒░     ░▒▓█▓▒░      ░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒ █▓▒░ ");
+    console.println("░▒▓█▓▒░░▒▓█▓▒░     ░▒▓█▓▒░      ░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒ █▓▒░");
+    console.println(" ░▒▓██████▓▒░▒▓███████▓▒░       ░▒▓█▓▒░░▒▓██████▓▒░░▒▓███████▓▒░  ");
+    console.println("_______  _______  _______  _______  _______  _______  _______  _______");
+    console.println(" _____ _____ _____ _____ _____    _____ _____ _____ _____ _____ _____ _____ _____ _____ __ __ ");
+    console.println("|     |  |  |  _  |     |   __|  |     |   | |   __|  |  | __  |   __|   __|   | |     |  |  |");
+    console.println("|   --|     |     |  |  |__   |  |-   -| | | |__   |  |  |    -|  |  |   __| | | |   --|_   _|");
+    console.println("|_____|__|__|__|__|_____|_____|  |_____|_|___|_____|_____|__|__|_____|_____|_|___|_____| |_|  ");
+    console.println("_______  _______  _______  _______  _______  _______  _______  _______ ");
+                                                                    
 
 	pros::delay(1000); 
 	chassis.calibrate(); // calibrate sensors
@@ -278,6 +294,7 @@ void initialize() {
     //motor configs
     chassis.setBrakeMode(pros::E_MOTOR_BRAKE_HOLD);
     intake_motor.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+   /// ladybrown_motor.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
 
     ladybrown_motor.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD); 
     wallarm_angle = ladybrown_motor.get_position();
@@ -348,6 +365,7 @@ void disabled() {}
  * starts.
  */
 void competition_initialize() {
+    /*
     rd::Selector selector({
         {"Qual", &Qual},
         {"PID Tuning", &tunePID},
@@ -358,6 +376,7 @@ void competition_initialize() {
         {"autoskills", &newSkills}
         //{"pathBlueQual", &pathBlueQual}
     });
+    */
 }
 
 /**
@@ -394,7 +413,7 @@ void autonomous() {
     });
     */
 
-    selector.run_auton();
+    //selector.run_auton();
     printf("Running auton...");
     
 }
@@ -423,6 +442,8 @@ void opcontrol() {
 	while (true) {
 		
         //doublestick_arcade();
+
+        //console.printf("Wall Arm Position: %d\n", ladybrown_motor.get_position());
 
         // select autonomous and run autonomous without a competition switch
         if(controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_UP)) {
@@ -461,24 +482,25 @@ void opcontrol() {
 
         } else {
 
-            subsystem.intake.stop();
+            intake_motor.brake();
         }
 
         //-----------------------------------//
         //      Wall Arm / Lady Brown        //
         //-----------------------------------//
-
+        /*
         if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R1))
         {
             subsystem.ladybrown.Raise();
         } else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2))
         {
-            LadyBrown.Raise();
+            subsystem.ladybrown.Lower();
         } else {
-            ladybrown_motor.move(0);
-        }
+            ladybrown_motor.brake();
+        }*/
+        subsystem.ladybrown.run();
 
-        printf("Wall Arm Position: %f\n", ladybrown_motor.get_position());
+        printf("Wall Arm Position: %d\n", ladybrown_encoder.get_value());
         
 
 

@@ -34,6 +34,7 @@ namespace Robot {
 
         extern pros::Motor intake_motor;
         extern pros::Motor ladybrown_motor;
+        extern pros::adi::Encoder ladybrown_encoder;
 
         extern bool mogo_engaged;
         extern bool doinker_up;

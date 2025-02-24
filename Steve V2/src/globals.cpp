@@ -1,5 +1,6 @@
 #include "globals.h"
 #include "api.h"
+#include "pros/adi.hpp"
 #include "robot/drivetrain.h"
 
 /*
@@ -36,6 +37,10 @@ namespace Robot {
 
         pros::Motor intake_motor(-12);
         pros::Motor ladybrown_motor(18);
+        //pros::adi::Encoder ladybrown_encoder('G', 'H', false);
+        pros::adi::Encoder ladybrown_encoder(
+            pros::adi::ext_adi_port_tuple_t(19, 'G', 'H'),
+            false);
 
         pros::MotorGroup left_motors(
 	        {-13, -8, 9}, //9
@@ -111,6 +116,9 @@ namespace Robot {
             angular_controller, // angular PID settings
             sensors // odometry sensors
         );
+
+        rd::Console console;
+        int intake_speed = 127;
 
         /* COPIED CODE
         pros::ADIDigitalOut FrontWing ('A');
