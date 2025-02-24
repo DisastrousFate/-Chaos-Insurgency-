@@ -13,6 +13,7 @@
 #include <cstdio>
 #include "robodash/api.h"
 #include "robodash/views/selector.hpp"
+#include "pros/adi.h"
 
 ASSET(lbq1_txt);
 ASSET(lbq2_txt);
@@ -34,9 +35,33 @@ pros::adi::Pneumatics plonker('B', true, true);
 
 // Motors
 
-pros::Motor intake_motor(-12);
+pros::Motor intake_motor(12);
 pros::Motor wall_arm(18 );
 
+int states[3] = {0, 24, 150};
+int currState = 0;
+int target = 0;
+
+
+
+pros::adi::Encoder ladybrown_encoder(
+            pros::adi::ext_adi_port_tuple_t(19, 'G', 'H'),
+            true);
+
+void nextState() {
+    currState += 1;
+    if (currState == 3) {
+        currState = 0;
+    }
+    target = states[currState];
+}
+
+void liftControl() {
+    double kp = 2;
+    double error = target - ladybrown_encoder.get_value();
+    double velocity = kp * error;
+    wall_arm.move(velocity);
+}
 
 //intake_motor.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
 
@@ -138,10 +163,6 @@ lemlib::Chassis chassis(drivetrain, // drivetrain settings
                         angular_controller, // angular PID settings
                         sensors // odometry sensors
 );
-
-void getWallPos(){
-    wallarm_angle = wall_arm.get_position();
-}
 
 // Auton Functions
 
@@ -353,7 +374,15 @@ void initialize() {
 
     wall_arm.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD); 
     wallarm_angle = wall_arm.get_position();
-    console.printf("Wall Arm Position: %d\n", wallarm_angle);
+    ladybrown_encoder.reset();
+   // console.printf("Wall Arm Position: %d\n", ladybr);
+
+    pros::Task liftControlTask([]{
+        while (true) {
+            liftControl();
+            pros::delay(10);
+        }
+    });
 
 
 /* Run to check optical shaft encoder inversion
@@ -543,6 +572,8 @@ void wallarm_ready(){
 
 }
 
+
+
 /**
  * Runs the operator control code. This function will be started in its own task
  * with the default priority and stack size whenever the robot is enabled via
@@ -613,7 +644,7 @@ void opcontrol() {
         //      Wall Arm        //
         //----------------------//
 
-        if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R1))
+        /*if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R1))
         {
             wall_arm.move(wallarm_speed);
         } else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2))
@@ -621,9 +652,13 @@ void opcontrol() {
             wall_arm.move(-wallarm_speed);
         } else {
             wall_arm.move(0);
-        }
+        }*/
 
-        printf("Wall Arm Position: %d\n", wall_arm.get_position());
+        if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1)) {
+			nextState();
+		}
+
+        printf("Wall Arm Position: %d\n", ladybrown_encoder.get_value());
         
 
 
