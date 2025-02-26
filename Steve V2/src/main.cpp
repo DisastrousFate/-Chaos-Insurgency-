@@ -14,54 +14,27 @@
 #include "robodash/api.h"
 #include "robodash/views/selector.hpp"
 #include "pros/adi.h"
+#include "headers/ladybrown.h"
+#include "headers/globals.h"
+
+using namespace Globals;
+
+
+struct Subsystems {
+
+    ladyBrown lb;
+
+} subsystem;
 
 ASSET(lbq1_txt);
 ASSET(lbq2_txt);
 
-
-pros::Controller controller(pros::E_CONTROLLER_MASTER);
-
-
 // Pneumatics
-
-//pros::adi::DigitalOut mogo1('A', 0); // assuming 'A' is the port for the piston
-//pros::adi::DigitalOut mogo2('B',0); // assuming 'B' is the port for the piston
-
 pros::adi::Pneumatics mogo_piston1('A', true, true);
 pros::adi::Pneumatics plonker('B', true, true);
 
-//pros::adi::DigitalOut plonker('C', 0); // assuming 'A' is the port for the piston
-//pros::adi::Pneumatics plonker('G', true, true);
-
 // Motors
-
 pros::Motor intake_motor(-12);
-pros::Motor wall_arm(18 );
-
-int states[4] = {0, 24, 130, 180};
-int currState = 0;
-int target = 0;
-
-
-
-pros::adi::Encoder ladybrown_encoder(
-            pros::adi::ext_adi_port_tuple_t(19, 'G', 'H'),
-            true);
-
-void nextState() {
-    currState += 1;
-    if (currState == 4) {
-        currState = 0;
-    }
-    target = states[currState];
-}
-
-void liftControl() {
-    double kp = 2.2;
-    double error = target - ladybrown_encoder.get_value();
-    double velocity = kp * error;
-    wall_arm.move(velocity);
-}
 
 //intake_motor.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
 
@@ -72,10 +45,6 @@ static bool plonker_up = false;
 static int intakeProcess_time = 500; // ms
 static int intakeCapture_time = 1000; // ms
 static int intake_speed = 127;
-
-
-static int wallarm_speed = 60;
-int wallarm_angle = 0;
 
 static int mogoDelay_time = 200; // ms
 static int autonTimeout = 10000; // ms
@@ -371,18 +340,8 @@ void initialize() {
     //motor configs
     chassis.setBrakeMode(pros::E_MOTOR_BRAKE_HOLD);
     intake_motor.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
-
-    wall_arm.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD); 
-    wallarm_angle = wall_arm.get_position();
-    ladybrown_encoder.reset();
    // console.printf("Wall Arm Position: %d\n", ladybr);
 
-    pros::Task liftControlTask([]{
-        while (true) {
-            liftControl();
-            pros::delay(10);
-        }
-    });
 
 
 /* Run to check optical shaft encoder inversion
@@ -568,11 +527,6 @@ void toggle_plonker(){
     plonker.toggle();
 }
 
-void wallarm_ready(){
-
-}
-
-
 
 /**
  * Runs the operator control code. This function will be started in its own task
@@ -624,43 +578,7 @@ void opcontrol() {
             intake_motor.move(0);
         }
 
-        
-       /* if (controller.get_digital(DIGITAL_DOWN))
-        {
-            wall_arm.move(127);
-        } else {
-            wall_arm.move(0);
-        }
-
-        if (controller.get_digital(DIGITAL_B))
-        {
-            wall_arm.move(-127);
-        } else {
-            wall_arm.move(0);
-        }
-        */
-
-        //----------------------//
-        //      Wall Arm        //
-        //----------------------//
-
-        /*if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R1))
-        {
-            wall_arm.move(wallarm_speed);
-        } else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2))
-        {
-            wall_arm.move(-wallarm_speed);
-        } else {
-            wall_arm.move(0);
-        }*/
-
-        if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1)) {
-			nextState();
-		}
-
-        printf("Wall Arm Position: %d\n", ladybrown_encoder.get_value());
-        
-
+        subsystem.lb.ladybrown_run();
 
         // delay to save resources
         pros::delay(25);
