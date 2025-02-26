@@ -35,10 +35,10 @@ pros::adi::Pneumatics plonker('B', true, true);
 
 // Motors
 
-pros::Motor intake_motor(12);
+pros::Motor intake_motor(-12);
 pros::Motor wall_arm(18 );
 
-int states[3] = {0, 24, 150};
+int states[4] = {0, 24, 130, 180};
 int currState = 0;
 int target = 0;
 
@@ -50,14 +50,14 @@ pros::adi::Encoder ladybrown_encoder(
 
 void nextState() {
     currState += 1;
-    if (currState == 3) {
+    if (currState == 4) {
         currState = 0;
     }
     target = states[currState];
 }
 
 void liftControl() {
-    double kp = 2;
+    double kp = 2.2;
     double error = target - ladybrown_encoder.get_value();
     double velocity = kp * error;
     wall_arm.move(velocity);
