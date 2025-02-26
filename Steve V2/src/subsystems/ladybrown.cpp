@@ -7,6 +7,8 @@
 #include "lemlib/pid.hpp"
 #include "lemlib/timer.hpp"
 #include <cstdlib>
+#include "pros/screen.h"
+#include "robodash/views/console.hpp"
 
 
 using namespace Globals;
@@ -16,7 +18,6 @@ ladyBrown::ladyBrown() : ladybrownPID(2, 0, 0, 2, false) {
     ladybrown_motor.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
 }
 
-bool isPIDrunning = false;
 
 void ladyBrown::nextState() {
     ladyBrown::currState += 1;
@@ -80,6 +81,7 @@ void ladyBrown::ladybrown_manual() {
 void ladyBrown::ladybrown_run(bool async, int timeout){
     if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1)) {
         nextState();
+    
     };
     if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2)) {
         prevState();
