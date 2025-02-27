@@ -18,6 +18,8 @@
 ASSET(lbq1_txt);
 ASSET(lbq2_txt);
 
+ASSET(skills1_txt);
+
 
 pros::Controller controller(pros::E_CONTROLLER_MASTER);
 
@@ -29,6 +31,9 @@ pros::Controller controller(pros::E_CONTROLLER_MASTER);
 
 pros::adi::Pneumatics mogo_piston1('A', true, true);
 pros::adi::Pneumatics plonker('B', true, true);
+pros::adi::Ultrasonic ultrasonic('G', 'H'); // FIX, input, output
+
+double allianceStake_distance = 3.5; // centimeters
 
 //pros::adi::DigitalOut plonker('C', 0); // assuming 'A' is the port for the piston
 //pros::adi::Pneumatics plonker('G', true, true);
@@ -111,7 +116,7 @@ lemlib::TrackingWheel vertical_tracking_wheel(&vertical_adi_encoder, lemlib::Omn
 //horizontal tracking wheel
 lemlib::TrackingWheel horizontal_tracking_wheel(&horizontal_adi_encoder, lemlib::Omniwheel::OLD_275_HALF, -4.5);
 
-pros::Imu imu(9); // inertial sensor
+pros::Imu imu(11); // inertial sensor
 
 lemlib::OdomSensors sensors(&vertical_tracking_wheel, // vertical tracking wheel 1, set to null
                             nullptr, // vertical tracking wheel 2, set to nullptr as we are using IMEs
@@ -200,17 +205,49 @@ void A_plonker(){
     plonker.toggle();
 }
 
+float allianceStake_allign(){
+    lemlib::Pose pose = chassis.getPose();
+    float poseX = pose.x;
+    float poseY = pose.y;
+    float distance = ultrasonic.get_value();
+    float difference = distance - allianceStake_distance;
+    if (difference  > 0){ // too far
+        if(chassis.getPose().x < 0){ // left side of field
+            chassis.moveToPoint(poseX - difference, poseY, autonTimeout, {}, false);
+        } else {
+            chassis.moveToPoint(poseX + difference, poseY, autonTimeout, {}, false);
+        }
+    } else {
+        if(chassis.getPose().x > 0){ // right side of field
+            chassis.moveToPoint(poseX + difference, poseY, autonTimeout, {}, false);
+        } else {
+            chassis.moveToPoint(poseX - difference, poseY, autonTimeout, {}, false);
+        }
+    }
+    
+    
+
+}
 
 // Auton Routines
 
 void Skills(){
-    chassis.setPose(0, 0, 0);
-    chassis.moveToPoint(-47.462, 17.854, 180);
-    pros::delay(mogoDelay_time);
+    chassis.setPose(-58.726, -0.312, 270);
+    allianceStake_allign();
 
+    // print pose
+    printf("X: %f, Y: %f, Theta: %f\n", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
+
+    chassis.moveToPose(-47.657, -0.312, 0, autonTimeout, {}, false);
+    chassis.moveToPoint(-47.114, -23.462, autonTimeout, {}, false);
     A_mogoClamp();
-    pros::delay(mogoDelay_time);
+
     A_spinIntake();
+    chassis.turnToHeading(70, autonTimeout);
+    chassis.follow(skills1_txt, 10, 80000, true, false);
+    
+
+
 } 
 
 void newSkills(){ // robot garden gambit
@@ -272,7 +309,7 @@ void blue_Qual2(){
     chassis.moveToPoint(60,160,3500);
 }
 
-void left_redQual(){
+void left_redQual(){ // Left Red Qualifications / Left Right Qualifications.
     chassis.setPose(-58.19, 23.288, 270);
     chassis.follow(lbq1_txt, 10, autonTimeout, false, false);
     A_mogoClamp();
@@ -333,21 +370,19 @@ void tunePID(){
 }
 
 
-rd::Selector selector({
-    {"Qual", &Qual},
-    {"PID Tuning", &tunePID},
-    {"Alliance", &alliance},
-    {"leftRedQual", &left_redQual},
-    {"RedLeftAuton", &RedLeftAuton},
-    {"BlueRightAuton", &BlueRightAuton},
-    {"autoskills", &newSkills}
-    //{"pathBlueQual", &pathBlueQual}
-
-});
 
 rd::Console console; /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+rd::Selector selector({
+        {"Qual", &Qual},
+        {"PID Tuning", &tunePID},
+        {"Alliance", &alliance},
+        {"leftRedQual", &left_redQual},
+        {"RedLeftAuton", &RedLeftAuton},
+        {"BlueRightAuton", &BlueRightAuton},
+        {"autoskills", &newSkills}
+        //{"pathBlueQual", &pathBlueQual}
 
-
+    });
 
 /**
  * Runs initialization code. This occurs as soon as the program is started.
@@ -448,7 +483,10 @@ void disabled() {}
  * This task will exit when the robot is enabled and autonomous or opcontrol
  * starts.
  */
-void competition_initialize() {}
+void competition_initialize() {
+
+    
+}
 
 /**
  * Runs the user autonomous code. This function will be started in its own task
@@ -644,23 +682,10 @@ void opcontrol() {
         //      Wall Arm        //
         //----------------------//
 
-        /*if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R1))
-        {
-            wall_arm.move(wallarm_speed);
-        } else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2))
-        {
-            wall_arm.move(-wallarm_speed);
-        } else {
-            wall_arm.move(0);
-        }*/
 
         if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1)) {
 			nextState();
 		}
-
-        printf("Wall Arm Position: %d\n", ladybrown_encoder.get_value());
-        
-
 
         // delay to save resources
         pros::delay(25);
