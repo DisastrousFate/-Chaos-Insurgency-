@@ -14,11 +14,17 @@
 #include "robodash/api.h"
 #include "robodash/views/selector.hpp"
 #include "pros/adi.h"
+#include "pros/rtos.h"
+#include "lemlib/timer.hpp"
 
 ASSET(lbq1_txt);
 ASSET(lbq2_txt);
 
+ASSET(RRQ1_txt);
+ASSET(RRQ2_txt);
+
 ASSET(skills1_txt);
+ASSET(skills2_txt);
 
 
 pros::Controller controller(pros::E_CONTROLLER_MASTER);
@@ -43,7 +49,7 @@ double allianceStake_distance = 3.5; // centimeters
 pros::Motor intake_motor(-12);
 pros::Motor wall_arm(18 );
 
-int states[4] = {0, 24, 130, 180};
+int states[3] = {0, 24, 130};
 int currState = 0;
 int target = 0;
 
@@ -53,19 +59,96 @@ pros::adi::Encoder ladybrown_encoder(
             pros::adi::ext_adi_port_tuple_t(19, 'G', 'H'),
             true);
 
+int lb_timeout = 1000;
+bool pidRunning = false;
+float max_error = 500;
+
 void nextState() {
     currState += 1;
-    if (currState == 4) {
+    if (currState == 3) {
         currState = 0;
     }
     target = states[currState];
 }
 
+void prevState(){
+    currState -= 1;
+    if (currState == -1) {
+        currState = 3;
+    }
+    target = states[currState];
+}
+
 void liftControl() {
-    double kp = 2.2;
-    double error = target - ladybrown_encoder.get_value();
-    double velocity = kp * error;
-    wall_arm.move(velocity);
+        double kp = 1.5;
+        double error = target - ladybrown_encoder.get_value();
+        double velocity = kp * error;
+        wall_arm.move(velocity);
+}
+
+void wallarm_forwards(){
+
+        nextState();
+
+        if (pidRunning == false){
+
+            pros::Task liftControlTask([]{
+                
+                    pidRunning = true;
+                    lemlib::Timer timer(lb_timeout);
+                
+                    while (true) {
+                        double kp = 2.5;
+                        double error = target - ladybrown_encoder.get_value();
+                        double velocity = kp * error;
+                        wall_arm.move(velocity);
+
+                        //if (std::abs(error) < max_error || timer.isDone()) {
+                        if(timer.isDone()){
+                            wall_arm.brake();
+                            pidRunning = false;
+                            break;
+                        }
+
+                        pros::delay(20);
+                    }
+            
+            });
+
+        }
+
+        intake_motor.move(-60);
+        pros::delay(10);
+        intake_motor.move(0);
+
+}
+
+void walllarm_backwards(){
+    prevState();
+
+    if (pidRunning == false){
+    pros::Task liftControlTask([]{
+        //if (!pidRunning){
+            pidRunning = true;
+            lemlib::Timer timer(lb_timeout);
+        
+            while (true) {
+                double kp = 1.8;
+                double error = target - ladybrown_encoder.get_value();
+                double velocity = kp * error;
+                wall_arm.move(velocity);
+
+                if (std::abs(error) < max_error || timer.isDone()) {
+                    wall_arm.brake();
+                    pidRunning = false;
+                    break;
+                }
+
+                pros::delay(20);
+            }
+        //}
+    });
+    }
 }
 
 //intake_motor.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
@@ -98,9 +181,9 @@ pros::MotorGroup right_motors(
 lemlib::Drivetrain drivetrain(
 	&left_motors,   
 	&right_motors,
-	13,
-	lemlib::Omniwheel::OLD_4,
-	420,
+	13.75,
+	lemlib::Omniwheel::OLD_275,
+	480,
 	2
 );  
 
@@ -108,13 +191,13 @@ lemlib::Drivetrain drivetrain(
 pros::adi::Encoder vertical_adi_encoder('C', 'D', true); // add true parameter to reverse
 
 // perpendicular/horizontal encoder
-pros::adi::Encoder horizontal_adi_encoder('E', 'F', true); // add true parameter to reverse
+pros::adi::Encoder horizontal_adi_encoder('E', 'F', false); // add true parameter to reverse
 
 //vertical tracking wheel
 lemlib::TrackingWheel vertical_tracking_wheel(&vertical_adi_encoder, lemlib::Omniwheel::OLD_275_HALF, 0.5);
 
 //horizontal tracking wheel
-lemlib::TrackingWheel horizontal_tracking_wheel(&horizontal_adi_encoder, lemlib::Omniwheel::OLD_275_HALF, -4.5);
+lemlib::TrackingWheel horizontal_tracking_wheel(&horizontal_adi_encoder, lemlib::Omniwheel::OLD_275_HALF, -1.45);
 
 pros::Imu imu(11); // inertial sensor
 
@@ -149,9 +232,9 @@ lemlib::ControllerSettings lateral_controller(13, // proportional gain (kP)
 );*/
 
 // angular PID controller
-lemlib::ControllerSettings angular_controller(4.3, // proportional gain (kP)
+lemlib::ControllerSettings angular_controller(4.6, // proportional gain (kP)
                                               0, // integral gain (kI)
-                                              27.3, // derivative gain (kD)
+                                              24, // derivative gain (kD)
                                               3, // anti windup
                                               1, // small error range, in inches
                                               100, // small error range timeout, in milliseconds
@@ -159,6 +242,19 @@ lemlib::ControllerSettings angular_controller(4.3, // proportional gain (kP)
                                               500, // large error range timeout, in milliseconds
                                               0 // maximum acceleration (slew)
 );
+
+/*lemlib::ControllerSettings angular_controller(8, // proportional gain (kP)
+                                              0, // integral gain (kI)
+                                              10, // derivative gain (kD)
+                                              0, // anti windup
+                                              0, // small error range, in inches
+                                              0, // small error range timeout, in milliseconds
+                                              0, // large error range, in inches
+                                              0, // large error range timeout, in milliseconds
+                                              0 // maximum acceleration (slew)
+);
+8
+*/
 
 
 
@@ -179,13 +275,13 @@ void A_intakeRing(){
 }
 
 void A_captureRing(){
-    intake_motor.move(-intake_speed);
+    intake_motor.move(intake_speed);
     pros::delay(intakeCapture_time);
     intake_motor.move(0);
 }
 
 void A_spinIntake(){
-    intake_motor.move(-intake_speed);
+    intake_motor.move(intake_speed);
 }
 
 void A_stopIntake(){
@@ -233,83 +329,38 @@ float allianceStake_allign(){
 
 void Skills(){
     chassis.setPose(-58.726, -0.312, 270);
-    allianceStake_allign();
+    //allianceStake_allign();
 
     // print pose
     printf("X: %f, Y: %f, Theta: %f\n", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
 
-    chassis.moveToPose(-47.657, -0.312, 0, autonTimeout, {}, false);
-    chassis.moveToPoint(-47.114, -23.462, autonTimeout, {}, false);
+    chassis.moveToPose(-47.657, -0.312, 270, autonTimeout, {false}, false);
+    chassis.turnToHeading(0, autonTimeout);
+    chassis.moveToPoint(-47.114, -23.462, autonTimeout, {false}, false);
     A_mogoClamp();
 
     A_spinIntake();
     chassis.turnToHeading(70, autonTimeout);
     chassis.follow(skills1_txt, 10, 80000, true, false);
     
+    pros::Task task{[=] {
+        wallarm_forwards(); // load state
+        pros::delay(200);
+        A_stopIntake();
+
+    }};
+
+    chassis.follow(skills2_txt, 10, 80000, true, false);
+    wallarm_forwards();
+    
+    chassis.moveToPoint(-0.022, -56, autonTimeout, {false}, false);
+
+
 
 
 } 
 
-void newSkills(){ // robot garden gambit
-    A_spinIntake();
-    pros::delay(1500);
-    A_stopIntake();
-
-    chassis.setPose(-60.867, 0.396, 90);
-    chassis.moveToPoint(-46.956, 0.407, autonTimeout, {}, false);
-
-    chassis.turnToHeading(0, 1000, {}, false);
-    chassis.moveToPoint(-47.491, -22.868,  autonTimeout, {}, false);
-    A_mogoClamp();
-    A_spinIntake();
-    chassis.turnToHeading(90, autonTimeout, {}, false);
-    chassis.moveToPoint(-23.146, -23.938, autonTimeout, {}, false);
-    chassis.turnToHeading(180, autonTimeout, {}, false);
-    chassis.moveToPoint(-23.681 , -62.729, autonTimeout, {}, false);
-    chassis.turnToHeading(90, autonTimeout, {}, false);
-    chassis.moveToPoint(-60.064, -64.601,autonTimeout, {}, false);
-    A_stopIntake();
-    A_mogoClamp();
-
-}
-
-
-void Qual(){
-    chassis.setPose(0, 0, 0);
-    chassis.moveToPoint(0,30,2000);
-    pros::delay(mogoDelay_time);
-    //chassis.moveToPose(10,40, 90, 4000);
-
-}
-
-void alliance(){
-    chassis.setPose(0,0,0);
-    A_spinIntake();
-    pros::delay(5000);
-    A_stopIntake();
-
-    chassis.moveToPoint(0, 30, 2000, {}, false);
-    pros::delay(mogoDelay_time);
-}
-
-void red_Qual2(){
-    chassis.setPose(-150, 60, 180, 1000);
-    chassis.moveToPose(-46, 60, 180, 4000);
-    A_mogoClamp();
-    pros::delay(1000);
-    A_spinIntake();
-    chassis.moveToPose(36, 130, 90, 5000);
-}
-
-void blue_Qual2(){
-    chassis.setPose(150, 60, 0, 1000);
-    chassis.moveToPoint(60,60,4000);
-    A_mogoClamp();
-    A_spinIntake();
-    chassis.moveToPoint(60,160,3500);
-}
-
-void left_redQual(){ // Left Red Qualifications / Left Right Qualifications.
+void left_red(){ // Left Red Qualifications / Left Blue Qualifications.
     chassis.setPose(-58.19, 23.288, 270);
     chassis.follow(lbq1_txt, 10, autonTimeout, false, false);
     A_mogoClamp();
@@ -318,7 +369,7 @@ void left_redQual(){ // Left Red Qualifications / Left Right Qualifications.
     chassis.turnToHeading(0, 1000, {}, false);
     chassis.moveToPoint(-23.574, 47.162, autonTimeout, {}, false);
     pros::delay(1000);
-    A_mogoClamp();
+    
     
     chassis.turnToHeading(180,1000, {}, false);
 
@@ -327,6 +378,17 @@ void left_redQual(){ // Left Red Qualifications / Left Right Qualifications.
 
 
 }
+
+void right_red(){
+    chassis.setPose(-58.815, -23.309, 270);
+    chassis.follow(RRQ1_txt, 10, autonTimeout, false, false);
+    A_mogoClamp();
+    A_captureRing();
+
+
+
+
+}   
 
 
 //BREAD AUTOON
@@ -343,13 +405,13 @@ void BlueRightAuton () {
     chassis.moveToPose(-24,-15,45,2000,{.forwards=true},true);
 }
 
-void RedLeftAuton(){
+/*void RedLeftAuton(){
     chassis.setPose(0,0,0);
     chassis.moveToPose(0,-29,0,4000,{.forwards = false, .maxSpeed = 30}, false);
     A_mogoClamp();
     pros::delay(1000);
     A_spinIntake();
-}
+}*/
 
 // PID Tuning
 void tunePID(){
@@ -357,7 +419,7 @@ void tunePID(){
     chassis.setPose(0, 0, 0);
     // turn to face heading 90 with a very long timeout
     //chassis.turnToHeading(90, 100000);
-    chassis.moveToPoint(0, 20, 1000);
+    chassis.moveToPoint(0, 20, 10000);
     /*pros::delay(1000);
     chassis.turnToHeading(270, 1000);
     pros::delay(1000);
@@ -371,18 +433,18 @@ void tunePID(){
 
 
 
-rd::Console console; /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 rd::Selector selector({
-        {"Qual", &Qual},
         {"PID Tuning", &tunePID},
-        {"Alliance", &alliance},
-        {"leftRedQual", &left_redQual},
-        {"RedLeftAuton", &RedLeftAuton},
-        {"BlueRightAuton", &BlueRightAuton},
-        {"autoskills", &newSkills}
+        {"left_red", &left_red},
+        {"right_red", &right_red},
+        //{"right_", &BlueRightAuton},
+        {"autoskills", &Skills}
         //{"pathBlueQual", &pathBlueQual}
 
     });
+
+rd::Console console;
 
 /**
  * Runs initialization code. This occurs as soon as the program is started.
@@ -412,15 +474,11 @@ void initialize() {
     ladybrown_encoder.reset();
    // console.printf("Wall Arm Position: %d\n", ladybr);
 
-    pros::Task liftControlTask([]{
-        while (true) {
-            liftControl();
-            pros::delay(10);
-        }
-    });
+    
+  
 
 
-/* Run to check optical shaft encoder inversion
+ /*Run to check optical shaft encoder inversion
 
 	while (true) { // infinite loop
         // print measurements from the adi encoder
@@ -433,8 +491,8 @@ void initialize() {
         //console.printf("HORZ Encoder: %i\n", horizontal_adi_encoder.get_value());
         pros::delay(25); // delay to save resources. DO NOT REMOVE
     }
-    
 */
+
 
 // print position to brain screen
     /*pros::Task screen_task([&]() {
@@ -632,6 +690,14 @@ void opcontrol() {
 		
         doublestick_arcade();
 
+        if(controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A)){
+            autonomous();
+        }
+        //stop auton
+        if(controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X)){
+            chassis.cancelAllMotions();
+        }
+
         //----------------------//
         //      Pneumatics      //
         //----------------------//
@@ -684,8 +750,11 @@ void opcontrol() {
 
 
         if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1)) {
-			nextState();
+			wallarm_forwards();
 		}
+        if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2)) {
+            walllarm_backwards();
+        }
 
         // delay to save resources
         pros::delay(25);

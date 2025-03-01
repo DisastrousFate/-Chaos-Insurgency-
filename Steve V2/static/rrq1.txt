@@ -1,0 +1,31 @@
+-58.857, -23.825, 64.921
+-56.882, -24.121, 60.887
+-54.888, -24.045, 56.574
+-52.991, -23.441, 53.85
+-51.344, -22.319, 63.854
+-50, -20.842, 64.967
+-48.853, -19.205, 60.934
+-47.77, -17.523, 56.612
+-46.599, -15.903, 51.934
+-45.185, -14.495, 46.802
+-43.427, -13.563, 43.158
+-41.456, -13.292, 62.47
+-39.479, -13.552, 70.504
+-37.57, -14.141, 66.808
+-35.742, -14.95, 62.893
+-33.974, -15.885, 58.717
+-32.259, -16.913, 54.22
+-30.588, -18.011, 49.314
+-28.952, -19.162, 43.862
+-27.346, -20.353, 37.629
+-25.763, -21.575, 30.133
+-24.199, -22.821, 20
+-23.335, -23.53, 0
+-23.335, -23.53, 0
+-7.872, -36.215, 0
+endData
+127
+100
+200
+-58.857, -23.825, -42.933, -27.511, -53.498, 1.428, -23.335, -23.53
+#PATH.JERRYIO-DATA {"appVersion":"0.8.3","format":"LemLib v0.5","gc":{"robotWidth":16.5,"robotHeight":17,"robotIsHolonomic":false,"showRobot":true,"uol":2.54,"pointDensity":2,"controlMagnetDistance":1.968503937007874,"fieldImage":{"displayName":"V5RC 2025 - High Stakes","signature":"V5RC 2025 - High Stakes","origin":{"__type":"built-in"}},"coordinateSystem":"VEX Gaming Positioning System"},"paths":[{"segments":[{"controls":[{"uid":"iH8LKGORiI","x":-58.85743782448778,"y":-23.824706882128776,"lock":false,"visible":true,"heading":90,"__type":"end-point"},{"uid":"jPRZolSJ91","x":-42.933469214324596,"y":-27.51084484125617,"lock":false,"visible":true,"__type":"control"},{"uid":"e8YV3PQIqk","x":-53.49840992683671,"y":1.4279058060596255,"lock":false,"visible":true,"__type":"control"},{"uid":"iDpq5VN5qU","x":-23.33473861720067,"y":-23.529852688715373,"lock":false,"visible":true,"heading":130,"__type":"end-point"}],"speedProfiles":[],"lookaheadKeyframes":[],"uid":"BdiJnivVQG"}],"pc":{"speedLimit":{"minLimit":{"value":0,"label":"0"},"maxLimit":{"value":127,"label":"127"},"step":1,"from":20,"to":100},"bentRateApplicableRange":{"minLimit":{"value":0,"label":"0"},"maxLimit":{"value":1,"label":"1"},"step":0.001,"from":0,"to":0.1},"maxDecelerationRate":127},"name":"Path","uid":"ghK0CShUGX","lock":false,"visible":true}]}
