@@ -20,11 +20,21 @@
 ASSET(lbq1_txt);
 ASSET(lbq2_txt);
 
-ASSET(RRQ1_txt);
-ASSET(RRQ2_txt);
-
-ASSET(skills1_txt);
-ASSET(skills2_txt);
+ASSET(sk1_txt);
+ASSET(sk2_txt);
+ASSET(sk3_txt);
+ASSET(sk4_txt);
+ASSET(sk5_txt);
+ASSET(sk6_txt);
+ASSET(sk7_txt);
+ASSET(sk8_txt);
+ASSET(sk9_txt);
+ASSET(sk10_txt);
+ASSET(sk11_txt);
+ASSET(sk12_txt);
+ASSET(sk13_txt);
+ASSET(sk41_txt);
+ASSET(sk71_txt);
 
 
 pros::Controller controller(pros::E_CONTROLLER_MASTER);
@@ -231,10 +241,10 @@ lemlib::ControllerSettings lateral_controller(13, // proportional gain (kP)
                                               0 // maximum acceleration (slew)
 );*/
 
-// angular PID controller
-lemlib::ControllerSettings angular_controller(4.6, // proportional gain (kP)
+//angular PID controller
+lemlib::ControllerSettings angular_controller(4.3, // proportional gain (kP)
                                               0, // integral gain (kI)
-                                              24, // derivative gain (kD)
+                                              27.3, // derivative gain (kD)
                                               3, // anti windup
                                               1, // small error range, in inches
                                               100, // small error range timeout, in milliseconds
@@ -243,18 +253,17 @@ lemlib::ControllerSettings angular_controller(4.6, // proportional gain (kP)
                                               0 // maximum acceleration (slew)
 );
 
+
 /*lemlib::ControllerSettings angular_controller(8, // proportional gain (kP)
                                               0, // integral gain (kI)
-                                              10, // derivative gain (kD)
+                                              0, // derivative gain (kD)
                                               0, // anti windup
                                               0, // small error range, in inches
                                               0, // small error range timeout, in milliseconds
                                               0, // large error range, in inches
                                               0, // large error range timeout, in milliseconds
                                               0 // maximum acceleration (slew)
-);
-8
-*/
+);*/
 
 
 
@@ -328,34 +337,29 @@ float allianceStake_allign(){
 // Auton Routines
 
 void Skills(){
-    chassis.setPose(-58.726, -0.312, 270);
-    //allianceStake_allign();
-
-    // print pose
-    printf("X: %f, Y: %f, Theta: %f\n", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
-
-    chassis.moveToPose(-47.657, -0.312, 270, autonTimeout, {false}, false);
-    chassis.turnToHeading(0, autonTimeout);
-    chassis.moveToPoint(-47.114, -23.462, autonTimeout, {false}, false);
+    chassis.setPose(-59.422, -0.204, 270);
+    chassis.follow(sk1_txt, 10, autonTimeout, false, false);
     A_mogoClamp();
-
     A_spinIntake();
-    chassis.turnToHeading(70, autonTimeout);
-    chassis.follow(skills1_txt, 10, 80000, true, false);
-    
-    pros::Task task{[=] {
-        wallarm_forwards(); // load state
-        pros::delay(200);
-        A_stopIntake();
-
-    }};
-
-    chassis.follow(skills2_txt, 10, 80000, true, false);
-    wallarm_forwards();
-    
-    chassis.moveToPoint(-0.022, -56, autonTimeout, {false}, false);
-
-
+    chassis.follow(sk2_txt, 10, autonTimeout, true, false);
+    chassis.turnToHeading(90, 1000, {}, false);
+    chassis.follow(sk3_txt, 10, autonTimeout, false, false);
+    A_mogoClamp();
+    chassis.follow(sk4_txt, 10, autonTimeout, true, false);
+    chassis.turnToHeading(180, 1000, {}, false);
+    chassis.follow(sk41_txt, 10, autonTimeout, false, false);
+    A_mogoClamp();
+    chassis.follow(sk5_txt, 10, autonTimeout, true, false);
+    chassis.turnToHeading(90, 1000, {}, false);
+    chassis.follow(sk6_txt, 10, autonTimeout, false, false);
+    A_mogoClamp();
+    chassis.follow(sk7_txt, 10, autonTimeout, true, false);
+    chassis.follow(sk71_txt, 10, autonTimeout, false, false);
+    A_mogoClamp();
+    chassis.follow(sk8_txt, 10, autonTimeout, true, false);
+    chassis.turnToHeading(280, 1000, {}, false);
+    chassis.follow(sk9_txt, 10, autonTimeout, false, false);
+    A_mogoClamp();
 
 
 } 
@@ -381,7 +385,7 @@ void left_red(){ // Left Red Qualifications / Left Blue Qualifications.
 
 void right_red(){
     chassis.setPose(-58.815, -23.309, 270);
-    chassis.follow(RRQ1_txt, 10, autonTimeout, false, false);
+    ///chassis.follow(RRQ1_txt, 10, autonTimeout, false, false);
     A_mogoClamp();
     A_captureRing();
 
@@ -414,7 +418,7 @@ void BlueRightAuton () {
 }*/
 
 // PID Tuning
-void tunePID(){
+void tunePIDlat(){
     // set position to x:0, y:0, heading:0
     chassis.setPose(0, 0, 0);
     // turn to face heading 90 with a very long timeout
@@ -431,11 +435,16 @@ void tunePID(){
     //chassis.turnToHeading(0, 1000);*/
 }
 
+void tunePIDang(){
+    chassis.setPose(0,0,0);
+    chassis.turnToHeading(90, 10000);
+}
 
 
  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 rd::Selector selector({
-        {"PID Tuning", &tunePID},
+        {"PID Tuning Ang", &tunePIDang},
+        {"PID Tuning Lat", &tunePIDlat},
         {"left_red", &left_red},
         {"right_red", &right_red},
         //{"right_", &BlueRightAuton},
